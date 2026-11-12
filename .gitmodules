@@ -4,3 +4,15 @@
 [submodule "projects/pixman-rvv"]
 	path = projects/pixman-rvv
 	url = ../pixman-rvv
+[submodule "projects/openssl-rvv"]
+	path = projects/openssl-rvv
+	url = ../openssl-rvv
+[submodule "projects/libgcrypt-rvv"]
+	path = projects/libgcrypt-rvv
+	url = ../libgcrypt-rvv
+[submodule "projects/libpng-rvv"]
+	path = projects/libpng-rvv
+	url = ../libpng-rvv
+[submodule "projects/zlib-ng-rvv"]
+	path = projects/zlib-ng-rvv
+	url = ../zlib-ng-rvv
