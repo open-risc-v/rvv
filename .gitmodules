@@ -1,0 +1,3 @@
+[submodule "projects/libjpeg-turbo-rvv"]
+	path = projects/libjpeg-turbo-rvv
+	url = ../libjpeg-turbo-rvv

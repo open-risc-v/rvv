@@ -35,23 +35,28 @@ if [ ! -d .git ]; then
 fi
 
 if [ -f .gitmodules ] && grep -q "path = projects/$repo" .gitmodules; then
-  echo "已注册：projects/$repo（如需改 URL：git submodule set-url ...）" >&2
+  echo "已注册：projects/${repo}（如需改 URL：git submodule set-url ...）" >&2
   exit 0
 fi
 
 if [ -z "$url" ]; then
   url="../$repo"
   if [ ! -d "$ROOT/../$repo/.git" ]; then
-    echo "错误：找不到本地工程 $ROOT/../$repo，先跑 ./scripts/new-project.sh $atom" >&2
+    echo "错误：找不到本地工程 $ROOT/../${repo}，先跑 ./scripts/new-project.sh $atom" >&2
     exit 4
   fi
 fi
 
 mkdir -p projects
-git submodule add "$url" "projects/$repo"
+# 本地同级工程用相对路径（../<repo>）时，git 默认禁止 file 传输；
+# 只对本地路径放开，远端 https 地址不加这个开关。
+case "$url" in
+  ../*|/*|file://*) git -c protocol.file.allow=always submodule add -f "$url" "projects/$repo" ;;
+  *)                git submodule add "$url" "projects/$repo" ;;
+esac
 git submodule absorbgitdirs "projects/$repo" 2>/dev/null || true
 
-echo "== 已挂载 projects/$repo（$url）"
+echo "== 已挂载 projects/${repo}（${url}）"
 echo "下一步："
 echo "  git add .gitmodules projects/$repo && git commit -m 'submodule: add $repo'"
 echo "  ./scripts/sync.sh $short --depth 1"
