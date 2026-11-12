@@ -1,6 +1,6 @@
 ﻿id,pkg,project,wave,priority,gate,owner,updated,evidence,blocker
 RVV-001,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,W1,P0,G0,,2026-11-13,docs/plan.md,
-RVV-002,x11-libs/pixman,pixman-rvv,W1,P0,G0,,2026-11-13,docs/plan.md,
+RVV-002,x11-libs/pixman,pixman-rvv,W1,P0,G1,,2026-11-13,projects/pixman-rvv: run_ab.sh ALL PASS + diff_kernels 2/2(102 次比较) + docs/plan.md,
 RVV-003,media-libs/libpng,libpng-rvv,W1,P0,G0,,2026-11-13,docs/plan.md,
 RVV-004,sys-libs/zlib-ng,zlib-ng-rvv,W1,P0,G0,,2026-11-13,docs/plan.md,
 RVV-005,dev-libs/openssl,openssl-rvv,W1,P0,G0,,2026-11-13,docs/plan.md,

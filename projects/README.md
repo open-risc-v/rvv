@@ -65,6 +65,7 @@
 | 包 | 工程 | 门禁 | 说明 |
 |---|---|---|---|
 | `media-libs/libjpeg-turbo` | `projects/libjpeg-turbo-rvv` | G0 | 骨架来自 Skill，本机 A/B 框架自检 PASS；上游 URL 已确认 |
+| `x11-libs/pixman` | `projects/pixman-rvv` | G1 | 上游 `3174212a`（5 个 riscv 文件，含 `pixman-rvv.c`）；`run_ab.sh` ALL PASS + `diff_kernels` 2/2（102 次比较）；**项目级排期第一项**（P0/D4/29 人日），尚未 `fetch-upstream` |
 
 ## 6. 子模块的日常操作
 

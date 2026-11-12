@@ -1,3 +1,6 @@
 [submodule "projects/libjpeg-turbo-rvv"]
 	path = projects/libjpeg-turbo-rvv
 	url = ../libjpeg-turbo-rvv
+[submodule "projects/pixman-rvv"]
+	path = projects/pixman-rvv
+	url = ../pixman-rvv
