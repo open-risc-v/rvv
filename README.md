@@ -29,7 +29,7 @@ rvv/
 │   ├── 02-priority-rules.md       优先级判定规则 R1–R6 与三档定义
 │   ├── 03-rvv-playbook.md         RVV 移植技术路线：四类路径 + 编码约定 + 工具链矩阵
 │   ├── 04-isa-mapping.md          SSE/AVX/NEON → RVV 映射表与高频坑
-│   ├── 05-waves.md                波次计划 W0–W6、里程碑、依赖与资源假设
+│   ├── 05-waves.md                波次计划 W0–W7、里程碑、依赖与资源假设
 │   └── 06-acceptance.md           分类型验收口径与证据要求
 ├── data/
 │   ├── inventory.csv              166 包全量清单（来源表、ISA 列、类别、初判）
@@ -52,7 +52,7 @@ rvv/
 
 ## 怎么用
 
-**立一个新项目**（骨架来自 `libspeex-rvv`，由 Skill 生成）：
+**立一个新项目**（骨架来自 `libspeex-rvv`，由 Skill `rvv-port-project` 生成）：
 
 ```bash
 ./scripts/new-project.sh media-libs/libvpx      # 生成 ../libvpx-rvv 骨架，不下载源码
@@ -67,6 +67,15 @@ python3 scripts/build-xlsx.py                   # data/plan.xlsx
 python3 scripts/dashboard.py                    # STATUS.md
 ./scripts/verify.sh                             # 清单完整性 / 子模块一致性
 ```
+
+## 已落地状态
+
+- 本仓库已 `git init`；`projects/libjpeg-turbo-rvv` 是第一个在册子模块（G0）。
+- Skill 位于
+  `<workspace>/.user_skills/rvv-port-project`（生成器 + 骨架 + 三份 reference），
+  已通过 `quick_validate.py`，并在 `libjpeg-turbo-rvv` / `libvpx-rvv` 上实测：
+  native 构建、内核差分 2/2（102 次比较）、`run_ab.sh` ALL PASS、paired 基准可运行。
+
 
 ## 当前判断（摘要，详见 docs 与 data/plan.csv）
 

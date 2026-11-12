@@ -59,3 +59,24 @@
 - 主仓库（`rvv/`）**不构建任何子项目**，只做：清单、计划、状态、看板、模板、Skill。
 - 子项目**不依赖主仓库**，可以单独 clone / 单独 CI；主仓库只是索引。
 - 因此：不要把公共 CMake 代码放进主仓库；要放就放进 Skill 的 `assets/skeleton/`。
+
+## 5. 已在册的工程
+
+| 包 | 工程 | 门禁 | 说明 |
+|---|---|---|---|
+| `media-libs/libjpeg-turbo` | `projects/libjpeg-turbo-rvv` | G0 | 骨架来自 Skill，本机 A/B 框架自检 PASS；上游 URL 已确认 |
+
+## 6. 子模块的日常操作
+
+```bash
+# 子工程推进后，主仓库要同步指针（否则 verify 会看到旧 commit）
+git -C projects/libjpeg-turbo-rvv pull --ff-only
+git add projects/libjpeg-turbo-rvv && git commit -m "submodule: bump libjpeg-turbo-rvv"
+
+# 新环境克隆主仓库（先把子模块一起拉下来）
+git clone --recurse-submodules <rvv 仓库>
+```
+
+本地同级工程用相对路径（`../<repo>`）作 URL 时，git 默认禁止 file 传输；
+`scripts/add-submodule.sh` 只对本地路径加 `-c protocol.file.allow=always`，远端地址不受影响。
+
