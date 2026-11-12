@@ -99,7 +99,8 @@ fi
 echo "== 7. 文档完整性"
 for f in README.md docs/00-program-model.md docs/01-difficulty-rubric.md \
          docs/02-priority-rules.md docs/03-rvv-playbook.md docs/04-isa-mapping.md \
-         docs/05-waves.md docs/06-acceptance.md projects/README.md STATUS.md; do
+         docs/05-waves.md docs/06-acceptance.md docs/07-ai-schedule.md \
+         projects/README.md STATUS.md; do
   if [ -s "$f" ]; then ok "$f"; else bad "$f 缺失"; fi
 done
 

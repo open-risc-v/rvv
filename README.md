@@ -30,7 +30,8 @@ rvv/
 │   ├── 03-rvv-playbook.md         RVV 移植技术路线：四类路径 + 编码约定 + 工具链矩阵
 │   ├── 04-isa-mapping.md          SSE/AVX/NEON → RVV 映射表与高频坑
 │   ├── 05-waves.md                波次计划 W0–W7、里程碑、依赖与资源假设
-│   └── 06-acceptance.md           分类型验收口径与证据要求
+│   ├── 06-acceptance.md           分类型验收口径与证据要求
+│   └── 07-ai-schedule.md          AI 算力（60 token/s）下的时间轴重排
 ├── data/
 │   ├── inventory.csv              166 包全量清单（来源表、ISA 列、类别、初判）
 │   ├── plan.csv                   48 个核心项目：工作量 / 难点 / 优先级 / 波次 / 依赖
@@ -89,6 +90,9 @@ python3 scripts/dashboard.py                    # STATUS.md
 - **真正吃产能的是四个方向**：视频编解码（libvpx / aom / openh264 / x264 / x265 / ffmpeg 缺口）、
   科学计算（gromacs / fftw / tensorflow / eigen 调优）、正则与几何（hyperscan / embree）、
   密码学（nettle / botan / crypto++ / openssl 缺口）。合计约占主线工作量 70%。
+- **60 token/s 只快 4–5 倍，不是 20 倍**：生成侧 1 人日≈28 分钟（17×），但验证占 60%、
+  评审占 15%，单项目墙钟约 `pd×0.05 天`。主线 24 个月 → **约 24 周**（2026-11-16 → 2027-05-04），
+  前提是 2 个评审人 + 8 块板；评审人减到 1 人即退化为 44 周。详见 `docs/07-ai-schedule.md`。
 - **RVV 移植的成本大头不是写内核，是验证**：需要 bit-exact 的包（编解码、定点音频、密码、
   棋类/科学）验证系数取 1.5–2.0，工作量按 1.0 估会系统性低估 40%–100%。
 

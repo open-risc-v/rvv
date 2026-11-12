@@ -342,6 +342,59 @@ def main():
     ch.width = 18
     ws6.add_chart(ch, "A3")
 
+    # ---------------------------------------------------------------- AI 排期
+    # 数据来自 scripts/ai-capacity.py（默认 60 token/s / 8 agent / 8 板 / 2 评审）
+    ai_path = os.path.join(DATA, "ai-schedule.csv")
+    if os.path.exists(ai_path):
+        ai = read_csv("ai-schedule.csv")
+        ws7 = wb.create_sheet("AI 排期")
+        ws7.sheet_view.showGridLines = False
+        cols7 = [("wave", 8), ("scope", 34), ("pd", 9), ("gen_tokens", 12),
+                 ("gen_agent_h", 12), ("verify_board_h", 13), ("reviewer_pd", 11),
+                 ("start", 12), ("end", 12), ("calendar_days", 11)]
+        fit_cols(ws7, [8, 34, 10, 13, 13, 14, 12, 12, 12, 11] + [12])
+        title_row(ws7, "AI 算力（60 token/s）下的排期：人日 → token / 机时 / 评审",
+                  len(cols7))
+        labels7 = {"wave": "波次", "scope": "内容", "pd": "人日",
+                   "gen_tokens": "生成 token", "gen_agent_h": "生成(agent-h)",
+                   "verify_board_h": "验证(板-h)", "reviewer_pd": "评审(人日)",
+                   "start": "开始", "end": "结束", "calendar_days": "日历(天)"}
+        r7 = 2
+        for i, (k, _) in enumerate(cols7, 1):
+            ws7.cell(r7, i, labels7[k])
+        style_header(ws7, r7, len(cols7), 32)
+        first7 = r7 + 1
+        for x in ai:
+            r7 += 1
+            for i, (k, _) in enumerate(cols7, 1):
+                v = x[k]
+                if k in ("pd", "gen_agent_h", "verify_board_h", "reviewer_pd", "calendar_days"):
+                    try:
+                        v = float(v)
+                        v = int(v) if v == int(v) else v
+                    except ValueError:
+                        pass
+                elif k == "gen_tokens":
+                    try:
+                        v = f"{int(v) / 1e6:.1f}M"
+                    except ValueError:
+                        pass
+                ws7.cell(r7, i, v)
+        style_body(ws7, first7, r7, len(cols7), numeric_cols=(3, 4, 5, 6, 7, 10),
+                   center_cols=(1, 8, 9))
+
+        # 参数脚注（来自第一行，避免每行重复）
+        r7 += 2
+        ws7.merge_cells(start_row=r7, start_column=1, end_row=r7, end_column=10)
+        x0 = ai[0]
+        ws7.cell(r7, 1, f"参数：tps={x0['tps']}  agent={x0['agents']}  "
+                        f"板卡={x0['boards']}  评审人={x0['reviewers']}；"
+                        f"拆分 生成25%/验证60%/评审15%；1 人日≈100k 输出 token、1.2 板时。"
+                        f"重算：python3 scripts/ai-capacity.py --reviewers 3")
+        ws7.cell(r7, 1).font = Font(name=FONT_CN, size=9, color="595959")
+        ws7.cell(r7, 1).alignment = Alignment(wrap_text=True, vertical="center")
+        ws7.row_dimensions[r7].height = 34
+
     wb.save(OUT)
     print("written:", OUT)
 
