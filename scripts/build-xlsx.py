@@ -395,6 +395,48 @@ def main():
         ws7.cell(r7, 1).alignment = Alignment(wrap_text=True, vertical="center")
         ws7.row_dimensions[r7].height = 34
 
+    # ---------------------------------------------------------------- 项目排期
+    plan_path = os.path.join(DATA, "ai-plan.csv")
+    if os.path.exists(plan_path):
+        pr = read_csv("ai-plan.csv")
+        ws8 = wb.create_sheet("项目排期")
+        ws8.sheet_view.showGridLines = False
+        cols8 = [("id", 10), ("pkg", 28), ("wave", 7), ("priority", 8), ("difficulty", 9),
+                 ("pd", 7), ("tokens", 10), ("agent", 8), ("board", 7),
+                 ("start", 11), ("verify_end", 11), ("review_end", 11)]
+        fit_cols(ws8, [10, 28, 8, 9, 10, 8, 10, 8, 8, 12, 12, 12])
+        title_row(ws8, "项目级排期：人日 → 日期 / agent 槽 / 板卡槽 / 评审（48 项）", len(cols8))
+        labels8 = {"id": "编号", "pkg": "包", "wave": "波次", "priority": "优先级",
+                   "difficulty": "难度", "pd": "人日", "tokens": "生成 token",
+                   "agent": "agent", "board": "板卡", "start": "起",
+                   "verify_end": "验证完", "review_end": "评审完"}
+        r8 = 2
+        for i, (k, _) in enumerate(cols8, 1):
+            ws8.cell(r8, i, labels8[k])
+        style_header(ws8, r8, len(cols8), 30)
+        first8 = r8 + 1
+        for x in sorted(pr, key=lambda t: (t["wave"], t["review_end"])):
+            r8 += 1
+            for i, (k, _) in enumerate(cols8, 1):
+                v = x[k]
+                if k in ("pd",):
+                    v = int(v)
+                elif k == "tokens":
+                    v = f"{int(v) / 1e3:.0f}k"
+                ws8.cell(r8, i, v)
+            ws8.cell(r8, 4).fill = PatternFill("solid", fgColor=PRIO_FILL.get(x["priority"], "FFFFFF"))
+        style_body(ws8, first8, r8, len(cols8), numeric_cols=(6, 7),
+                   center_cols=(1, 3, 4, 5, 8, 9, 10, 11, 12))
+        ws8.freeze_panes = "C3"
+        ws8.auto_filter.ref = f"A2:{get_column_letter(len(cols8))}{r8}"
+        r8 += 2
+        ws8.merge_cells(start_row=r8, start_column=1, end_row=r8, end_column=len(cols8))
+        ws8.cell(r8, 1, "生成：python3 scripts/ai-plan.py；时间窗含 1.15× 返工缓冲，"
+                        "评审按 8h/工作日、容量=评审人数 人日/日。")
+        ws8.cell(r8, 1).font = Font(name=FONT_CN, size=9, color="595959")
+        ws8.cell(r8, 1).alignment = Alignment(wrap_text=True, vertical="center")
+        ws8.row_dimensions[r8].height = 28
+
     wb.save(OUT)
     print("written:", OUT)
 
