@@ -4,11 +4,15 @@
 
 | 编号 | 包 | 工程 | 工作单 |
 |---|---|---|---|
-| RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | [RVV-008-libwebp.md](RVV-008-libwebp.md) |
-| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | [RVV-009-libvpx.md](RVV-009-libvpx.md) |
-| RVV-010 | `media-libs/openh264` | `openh264-rvv` | [RVV-010-openh264.md](RVV-010-openh264.md) |
-| RVV-012 | `media-libs/libaom` | `libaom-rvv` | [RVV-012-libaom.md](RVV-012-libaom.md) |
-| RVV-017 | `media-libs/opus` | `opus-rvv` | [RVV-017-opus.md](RVV-017-opus.md) |
-| RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | [RVV-018-webrtc-audio-processing.md](RVV-018-webrtc-audio-processing.md) |
+| RVV-013 | `media-libs/x264` | `x264-rvv` | [RVV-013-x264.md](RVV-013-x264.md) |
+| RVV-014 | `media-libs/zimg` | `zimg-rvv` | [RVV-014-zimg.md](RVV-014-zimg.md) |
+| RVV-015 | `media-libs/libde265` | `libde265-rvv` | [RVV-015-libde265.md](RVV-015-libde265.md) |
+| RVV-026 | `dev-libs/botan` | `botan-rvv` | [RVV-026-botan.md](RVV-026-botan.md) |
+| RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | [RVV-027-crypto++.md](RVV-027-crypto++.md) |
+| RVV-028 | `sys-cluster/ceph` | `ceph-rvv` | [RVV-028-ceph.md](RVV-028-ceph.md) |
+| RVV-032 | `dev-cpp/eigen` | `eigen-rvv` | [RVV-032-eigen.md](RVV-032-eigen.md) |
+| RVV-033 | `sci-libs/fftw` | `fftw-rvv` | [RVV-033-fftw.md](RVV-033-fftw.md) |
+| RVV-034 | `sci-libs/gdal` | `gdal-rvv` | [RVV-034-gdal.md](RVV-034-gdal.md) |
+| RVV-035 | `sci-chemistry/gromacs` | `gromacs-rvv` | [RVV-035-gromacs.md](RVV-035-gromacs.md) |
 
 重新生成：`python3 scripts/dispatch.py --wave W1`

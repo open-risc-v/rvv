@@ -34,3 +34,33 @@
 [submodule "projects/webrtc-ap-rvv"]
 	path = projects/webrtc-ap-rvv
 	url = ../webrtc-ap-rvv
+[submodule "projects/x264-rvv"]
+	path = projects/x264-rvv
+	url = ../x264-rvv
+[submodule "projects/zimg-rvv"]
+	path = projects/zimg-rvv
+	url = ../zimg-rvv
+[submodule "projects/libde265-rvv"]
+	path = projects/libde265-rvv
+	url = ../libde265-rvv
+[submodule "projects/botan-rvv"]
+	path = projects/botan-rvv
+	url = ../botan-rvv
+[submodule "projects/ceph-rvv"]
+	path = projects/ceph-rvv
+	url = ../ceph-rvv
+[submodule "projects/eigen-rvv"]
+	path = projects/eigen-rvv
+	url = ../eigen-rvv
+[submodule "projects/fftw-rvv"]
+	path = projects/fftw-rvv
+	url = ../fftw-rvv
+[submodule "projects/gdal-rvv"]
+	path = projects/gdal-rvv
+	url = ../gdal-rvv
+[submodule "projects/gromacs-rvv"]
+	path = projects/gromacs-rvv
+	url = ../gromacs-rvv
+[submodule "projects/cryptopp-rvv"]
+	path = projects/cryptopp-rvv
+	url = ../cryptopp-rvv
