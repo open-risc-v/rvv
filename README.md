@@ -31,10 +31,16 @@ rvv/
 │   ├── 04-isa-mapping.md          SSE/AVX/NEON → RVV 映射表与高频坑
 │   ├── 05-waves.md                波次计划 W0–W7、里程碑、依赖与资源假设
 │   ├── 06-acceptance.md           分类型验收口径与证据要求
-│   └── 07-ai-schedule.md          AI 算力（60 token/s）下的时间轴重排（含项目级排期）
+│   ├── 07-ai-schedule.md          AI 算力（60 token/s）下的时间轴重排（含项目级排期）
+│   ├── 08-subagent-protocol.md    派工协议：工作单字段、回报格式、G1 依赖证据要求
+│   ├── 09-w1-baseline.md          W1 六项的 A/B 基线记录（G2 证据）
+│   ├── 10-cross-baseline.md       交叉编译基线：口径、六项结果、libgcrypt 阻塞
+│   └── 11-build-order.md          构建顺序：依赖边（4 硬 / 21 归因 / 27 软）、层级、重排后的 W1–W6
 ├── data/
 │   ├── inventory.csv              166 包全量清单（来源表、ISA 列、类别、初判）
-│   ├── plan.csv                   48 个核心项目：工作量 / 难点 / 优先级 / 波次 / 依赖
+│   ├── plan.csv                   48 个核心项目：工作量 / 难点 / 优先级 / 波次 / 层级 / 依赖
+│   ├── deps.csv                   52 条依赖边（hard/bench/soft + evidence），构建顺序的唯一真值源
+│   ├── waves.csv                  波次聚合：项数 / 人日 / 依赖（由 replan-waves.py 生成）
 │   ├── upstream-probe.json        实测上游元数据（HEAD、SIMD 文件数、RVV 现状），仅元数据
 │   ├── status.csv                 在册项目的门禁状态与证据指针（人工维护）
 │   └── plan.xlsx                  汇总报表（由 scripts/build-xlsx.py 生成）
@@ -92,7 +98,7 @@ python3 scripts/dashboard.py                    # STATUS.md
   密码学（nettle / botan / crypto++ / openssl 缺口）。合计约占主线工作量 70%。
 - **60 token/s 只快 4–5 倍，不是 20 倍**：生成侧 1 人日≈28 分钟（17×），但验证占 60%、
   评审占 15%，单项目墙钟约 `pd×0.05 天`。主线 24 个月 → **约 24 周**（2026-11-16 → 2027-05-04），
-  前提是 2 个评审人（3 人可到 17 周）、3–4 个 agent、2–4 块板；评审人减到 1 人即退化为 43 周。详见 `docs/07-ai-schedule.md`。
+  前提是 2 个评审人（3 人可到 18.6 周）、3–4 个 agent、2–4 块板；评审人减到 1 人即退化为 44 周。详见 `docs/07-ai-schedule.md`。
 - **RVV 移植的成本大头不是写内核，是验证**：需要 bit-exact 的包（编解码、定点音频、密码、
   棋类/科学）验证系数取 1.5–2.0，工作量按 1.0 估会系统性低估 40%–100%。
 

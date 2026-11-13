@@ -68,6 +68,16 @@ git log --oneline -3                # 提交粒度对得上工作单的阶段
 | 需要改上游语义才能对齐 | **禁止自行决定**，报派工方；这属于验收口径变更 |
 | 上游 SHA 拿不到 / 仓库要 auth | 停，报派工方（如 `aom` `x265` `waypipe` 这类） |
 
+## 6.5 G1 必须证明依赖被真正用上
+
+依赖重排（`docs/11-build-order.md`）之后，进 G1 的收工自查多一条：
+
+- `configure` / `cmake` 输出里，`data/deps.csv` 声明的 hard/bench 前置必须**可见且启用**
+  （如 ffmpeg `Enabled libvpx yes`、opencv `JPEG: YES`），并把版本号抄进 evidence；
+- 用系统库还是用 `../<dep>-rvv` 产出的前缀，必须写清；两者混用要在 `perf-log.md` 注明；
+- **归因基准**要扣掉前置的贡献（bench 边的用途）：例如 ffmpeg 的 VP9 解码数字低于
+  libvpx-rvv 单独的数字，说明瓶颈不在 vpx 内核，要分开记。
+
 ## 7. 状态回写由派工方做
 
 sub-agent **不写** `data/status.csv`、不改 `STATUS.md`、不动主仓库。流程是：

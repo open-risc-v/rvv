@@ -11,6 +11,7 @@
 import argparse
 import csv
 import math
+import os
 from datetime import date, timedelta
 
 SPLIT = {"gen": 0.25, "ver": 0.60, "hum": 0.15}
@@ -20,7 +21,7 @@ HUMAN_MULT = 0.5
 BUFFER = 0.15
 W0_DAYS = 10.0          # 基建：环境/硬件/CI，AI 压不动
 
-WAVES = {
+WAVES_FALLBACK = {
     "W1": dict(scope="上游已有 RVV", deps=["W0"]),
     "W2": dict(scope="媒体编解码", deps=["W1"]),
     "W3": dict(scope="音频", deps=["W1"]),
@@ -28,6 +29,23 @@ WAVES = {
     "W5": dict(scope="数学科学", deps=["W4"]),
     "W6": dict(scope="平台应用", deps=["W5"]),
 }
+
+
+def load_waves(path="data/waves.csv"):
+    """波次依赖由 data/deps.csv 推出（scripts/replan-waves.py 生成）。
+
+    波次顺序即构建顺序；`deps` 为 W0（基建）或更早波次。
+    没有 waves.csv 时退回手工基线。
+    """
+    if not os.path.exists(path):
+        return WAVES_FALLBACK
+    with open(path, encoding="utf-8-sig") as f:
+        rows = list(csv.DictReader(f))
+    out = {}
+    for r in rows:
+        d = [x for x in r["deps"].split("|") if x and x != "-"]
+        out[r["wave"]] = dict(scope=r.get("scope", ""), deps=d or ["W0"])
+    return out
 PRIO = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
 
 
@@ -70,6 +88,7 @@ def main():
 
     start = date.fromisoformat(a.start)
     rows = load_plan()
+    waves = load_waves()
 
     agents = Pool(a.agents)
     boards = Pool(a.boards)
@@ -82,8 +101,8 @@ def main():
 
     recs = []
     wave_exit = {}
-    for w in WAVES:
-        ready = max(wave_exit.get(d, W0_DAYS) for d in WAVES[w]["deps"])
+    for w in waves:
+        ready = max(wave_exit.get(d, W0_DAYS) for d in waves[w]["deps"])
         group = [r for r in rows if r["wave"] == w]
         group.sort(key=lambda r: (PRIO[r["priority"]], -r["pd_plan"]))
 
@@ -125,7 +144,7 @@ def main():
     print()
     print("| 波次 | 项目 | 起 | 止（末次评审） | 人日 | 生成 token |")
     print("|---|---|---|---|---|---|")
-    for w in WAVES:
+    for w in waves:
         g = [r for r in recs if r["wave"] == w]
         print(f"| {w} | {len(g)} | {min(r['start'] for r in g)} | "
               f"{max(r['review_end'] for r in g)} | {sum(r['pd'] for r in g)} | "

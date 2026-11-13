@@ -1,0 +1,53 @@
+﻿from_pkg,from_project,to_pkg,to_project,kind,evidence,note
+media-libs/libpng,libpng-rvv,sys-libs/zlib-ng,zlib-ng-rvv,hard,libpng CMakeLists 要求 ZLIB（本地 baseline 实测）,libpng 无 zlib 无法编；W1 内已同波完成
+net-libs/nodejs,node-rvv,dev-libs/openssl,openssl-rvv,hard,Gentoo 用系统 openssl（上游支持 --shared-openssl）,TLS 与 crypto 路径直接调用 openssl
+media-video/vlc,vlc-rvv,media-video/ffmpeg,ffmpeg-rvv,hard,vlc 依赖 libavcodec/avformat/libavutil 解码与 demux,ffmpeg 未完成则 vlc 无解码后端
+sci-libs/pcl,pcl-rvv,dev-cpp/eigen,eigen-rvv,hard,PCL 要求 Eigen3 ≥3.3（CMake find_package(Eigen3)）,点云算法底座
+media-video/ffmpeg,ffmpeg-rvv,media-libs/libvpx,libvpx-rvv,bench,ffmpeg configure --enable-libvpx 才有 VP8/VP9 外置编解码,归因：ffmpeg 的 VP9 数字必须扣掉 libvpx 内核贡献
+media-video/ffmpeg,ffmpeg-rvv,media-libs/libaom,libaom-rvv,bench,configure --enable-libaom,同上（AV1）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/openh264,openh264-rvv,bench,configure --enable-libopenh264（pkg-config wels/codec_api.h）,同上（H.264 软解）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/libde265,libde265-rvv,bench,configure 支持 libde265（HEVC 软解）,同上（HEVC）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/x264,x264-rvv,bench,configure --enable-libx264,同上（H.264 编码）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/x265,x265-rvv,bench,configure --enable-libx265,同上（HEVC 编码）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/zimg,zimg-rvv,bench,configure --enable-libzimg（zscale 滤镜）,同上（缩放/色彩转换）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/opus,opus-rvv,bench,configure --enable-libopus,同上（Opus 编解码）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/flac,flac-rvv,soft,ffmpeg 外置 FLAC 支持；ffmpeg 有原生实现，外置仅用于对照,同上（无损音频）
+media-video/ffmpeg,ffmpeg-rvv,media-sound/mpg123,mpg123-rvv,soft,configure --enable-libmp3lame/mpg123；ffmpeg 有原生实现，外置仅用于对照,同上（MP3）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/libwebp,libwebp-rvv,bench,configure --enable-libwebp,同上（WebP 编码）
+media-video/ffmpeg,ffmpeg-rvv,media-libs/libsdl2,SDL2-rvv,soft,ffplay 依赖 SDL2 输出；只影响 ffplay,只影响 ffplay，不影响库本身
+media-libs/opencv,opencv-rvv,sci-libs/gdal,gdal-rvv,soft,WITH_GDAL 默认关；打开才需要,可选互操作
+media-libs/opencv,opencv-rvv,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,bench,CMake WITH_JPEG 默认 ON（Linux 用系统库，也可 BUILD_JPEG 内置）,归因：imread/imwrite 的 JPEG 路径
+media-libs/opencv,opencv-rvv,media-libs/libpng,libpng-rvv,bench,WITH_PNG 默认 ON,同上（PNG 路径）
+media-libs/opencv,opencv-rvv,media-libs/libwebp,libwebp-rvv,bench,WITH_WEBP 默认 ON,同上（WebP 路径）
+media-libs/opencv,opencv-rvv,media-video/ffmpeg,ffmpeg-rvv,bench,WITH_FFMPEG 默认 ON（VideoIO）,同上（视频读写）
+sci-libs/gdal,gdal-rvv,media-libs/libpng,libpng-rvv,soft,GDAL 内置 libtiff/geotiff，也可用系统 zlib/libpng/libjpeg,可选；用系统库时才需要
+sci-libs/gdal,gdal-rvv,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,soft,同上,同上
+sci-libs/dlib,dlib-rvv,media-libs/libpng,libpng-rvv,soft,DLIB 的 image IO 可选依赖 libpng/libjpeg,可关
+sci-libs/dlib,dlib-rvv,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,soft,同上,同上
+media-libs/libwebp,libwebp-rvv,media-libs/libpng,libpng-rvv,soft,仅 cwebp/dwebp 示例需要 libpng,库本身不依赖
+media-libs/webrtc-audio-processing,webrtc-ap-rvv,media-libs/opus,opus-rvv,soft,上游为独立项目（自带 AEC/编解码），非编译依赖,经验/接口复用
+media-libs/speexdsp,speexdsp-rvv,media-libs/speex,libspeex-rvv,soft,speexdsp 由 speex 拆出但独立构建,模板与代码风格复用
+media-libs/libaom,libaom-rvv,media-libs/libvpx,libvpx-rvv,soft,无编译依赖；同为 AV1/VP9 家族,内核组织与测试语料复用（非阻塞）
+media-libs/x265,x265-rvv,media-libs/libde265,libde265-rvv,soft,x265 自带解码器用于分析，不依赖 libde265,HEVC 语料与一致性测试复用（非阻塞）
+media-video/vlc,vlc-rvv,media-libs/libsdl2,SDL2-rvv,soft,vlc 可用 SDL2 作显示/音频输出后端,可用其他后端
+media-tv/kodi,kodi-rvv,media-video/ffmpeg,ffmpeg-rvv,bench,kodi 媒体管线走 ffmpeg（自带拷贝）；集成基准需 ffmpeg 先 G4,集成验证需 ffmpeg 先 G4
+media-tv/kodi,kodi-rvv,media-libs/libsdl2,SDL2-rvv,soft,Kodi 的窗口/输入可走 SDL,可用其他后端
+www-client/chromium,chromium-rvv,media-libs/libpng,libpng-rvv,bench,DEPS 自带 third_party/libpng 拷贝,替换验证：用本地 RVV 版替换内置副本再跑基准
+www-client/chromium,chromium-rvv,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,bench,DEPS 自带 third_party/libjpeg_turbo,同上（图像解码主路径）
+www-client/chromium,chromium-rvv,sys-libs/zlib-ng,zlib-ng-rvv,bench,DEPS 自带 zlib（chromium 用 zlib-ng 兼容层）,同上（压缩/解压与网络栈）
+www-client/chromium,chromium-rvv,media-libs/libwebp,libwebp-rvv,bench,DEPS 自带 third_party/libwebp,同上
+www-client/chromium,chromium-rvv,media-libs/libvpx,libvpx-rvv,bench,DEPS 自带 third_party/libvpx,同上（VP9 视频）
+www-client/chromium,chromium-rvv,media-video/ffmpeg,ffmpeg-rvv,bench,DEPS 自带 third_party/ffmpeg,同上（媒体管线）
+www-client/chromium,chromium-rvv,media-libs/opus,opus-rvv,bench,chromium 内置 opus 拷贝,同上（音频）
+www-client/chromium,chromium-rvv,dev-libs/openssl,openssl-rvv,soft,chromium 用 BoringSSL，不用系统 openssl,只借密码学内核经验与测试方法
+dev-libs/nettle,nettle-rvv,dev-libs/openssl,openssl-rvv,soft,nettle 自带 hash/cipher 实现，无编译依赖,密码学内核写法与毒化矩阵复用
+dev-libs/botan,botan-rvv,dev-libs/openssl,openssl-rvv,soft,无编译依赖,同上
+dev-libs/crypto++,cryptopp-rvv,dev-libs/openssl,openssl-rvv,soft,无编译依赖,同上
+net-libs/mbedtls,mbedtls-rvv,dev-libs/openssl,openssl-rvv,soft,无编译依赖,同上
+dev-libs/libgcrypt,libgcrypt-rvv,dev-libs/openssl,openssl-rvv,soft,无编译依赖（两者都依赖各自底层库）,AES/SHA 内核可互为对照
+sys-cluster/ceph,ceph-rvv,dev-libs/rocksdb,rocksdb-rvv,soft,ceph 自带 rocksdb 子模块，系统 rocksdb 可选,若用系统 rocksdb 则需先完成
+sci-chemistry/gromacs,gromacs-rvv,sci-libs/fftw,fftw-rvv,soft,GROMACS 可用 FFTW，也可用内置 fftpack,用 FFTW 才需先完成（性能归因）
+media-sound/pulseaudio,pulseaudio-rvv,sci-libs/fftw,fftw-rvv,soft,FFTW 为可选重采样/卷积后端,可关
+sci-libs/tensorflow,tensorflow-rvv,dev-cpp/eigen,eigen-rvv,soft,TF 通过 third_party 自带 Eigen,内核可借用 Eigen 的 RVV 成果
+app-crypt/johntheripper,john-rvv,dev-libs/openssl,openssl-rvv,soft,JtR 部分格式可选链接 OpenSSL,可关
+x11-libs/pixman,pixman-rvv,media-libs/libpng,libpng-rvv,soft,仅 demos/tests 用 libpng 读图,库本身不依赖

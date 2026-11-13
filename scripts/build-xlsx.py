@@ -163,7 +163,7 @@ def main():
     ws2 = wb.create_sheet("核心计划")
     ws2.sheet_view.showGridLines = False
     cols = [("id", 9), ("pkg", 26), ("project", 22), ("priority", 9), ("wave", 7),
-            ("difficulty", 10), ("pd_low", 8), ("pd_high", 9), ("pd_plan", 9),
+            ("layer", 6), ("difficulty", 10), ("pd_low", 8), ("pd_high", 9), ("pd_plan", 9),
             ("validation", 18), ("path", 7), ("rvv_upstream", 12), ("deps", 22),
             ("difficulty_notes", 60), ("rationale", 40)]
     title_row(ws2, "核心 48 项：优先级 / 难度 / 工作量 / 验证口径", len(cols))
@@ -173,7 +173,7 @@ def main():
     for i, (k, _) in enumerate(cols, 1):
         ws2.cell(r, i, {"difficulty_notes": "难点", "rationale": "立项理由",
                         "pd_low": "低(人日)", "pd_high": "高(人日)", "pd_plan": "规划(人日)",
-                        "pkg": "包", "project": "工程", "priority": "优先级", "wave": "波次",
+                        "pkg": "包", "project": "工程", "priority": "优先级", "wave": "波次", "layer": "层",
                         "path": "路径", "rvv_upstream": "上游RVV", "deps": "依赖",
                         "validation": "验证口径", "difficulty": "难度", "id": "编号"}[k])
     style_header(ws2, r, len(cols), 34)
@@ -186,7 +186,7 @@ def main():
                 v = int(v)
             ws2.cell(r, i, v)
         ws2.cell(r, 4).fill = PatternFill("solid", fgColor=PRIO_FILL.get(x["priority"], "FFFFFF"))
-    style_body(ws2, first, r, len(cols), numeric_cols=(7, 8, 9), center_cols=(1, 4, 5, 6, 11, 12))
+    style_body(ws2, first, r, len(cols), numeric_cols=(8, 9, 10), center_cols=(1, 4, 5, 6, 7, 12, 13))
     ws2.freeze_panes = "C3"
     ws2.auto_filter.ref = f"A2:{get_column_letter(len(cols))}{r}"
 
@@ -239,16 +239,16 @@ def main():
                "任意包一条命令跑完 build+ab+bench"),
         "W1": ("上游已有 RVV：集成 + 缺口（图像/压缩/TLS）", 6, None, "M2–M4", "3–4",
                "6 项全部 G4，三条路径有真机加速比"),
-        "W2": ("媒体编解码：图像 + 视频", 10, None, "M4–M10", "3–4",
-               "libvpx/openh264/ffmpeg 解码 G4；图像四件套 G4"),
-        "W3": ("音频与实时通信", 8, None, "M6–M9", "2",
-               "opus/webrtc-ap G4，10ms 帧时延不退化"),
-        "W4": ("安全 / 压缩 / 存储", 7, None, "M9–M12", "2–3",
-               "openssl 缺口闭环；nettle/botan/cryptopp ≥G3"),
-        "W5": ("数学与科学计算", 8, None, "M11–M16", "2–3",
-               "eigen 调优达标；fftw/gromacs 达性能目标"),
-        "W6": ("平台与应用（chromium 等）", 9, None, "M15–M22", "2",
-               "chromium 完成集成+缺口，Skia 关键路径达标"),
+        "W2": ("解码内核：视频/图像/语音解码 + 音频底座", None, None, "12-01 → 01-04", "3–4",
+               "libvpx/aom/openh264 解码 G4；libwebp/opus G4"),
+        "W3": ("编码与数学底座：x264/HEVC 软解/FFT/Eigen/密码/存储", None, None, "01-04 → 02-04", "3–4",
+               "x264 与 zimg G4；eigen/fftw 达性能目标"),
+        "W4": ("重编码与安全搜索：x265/tensorflow/hyperscan/TLS 家族", None, None, "02-04 → 03-08", "2–3",
+               "x265 G4；nettle/mbedtls ≥G3；hyperscan 定点达标"),
+        "W5": ("集成前置：ffmpeg 集成 + node/pcl/SDL2 等按依赖就位", None, None, "03-08 → 04-06", "2–3",
+               "ffmpeg 各外置 codec 归因基准可测；node/pcl G4"),
+        "W6": ("平台集成：chromium / opencv / kodi / vlc", None, None, "04-06 → 05-07", "2",
+               "chromium 集成+缺口，Skia 关键路径达标"),
         "W7": ("长尾（机会型插单）", 118, None, "全程", "≤1", "按需，不设出口"),
     }
     r = 2
@@ -260,6 +260,8 @@ def main():
     first = r + 1
     for w_ in ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]:
         scope, n, w0pd, win, par, exit_ = wave_meta[w_]
+        if n is None:
+            n = rows[w_][0]
         r += 1
         if w_ == "W0":
             lo, hi, pd_ = 0, 0, w0pd
