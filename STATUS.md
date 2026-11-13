@@ -9,7 +9,7 @@
 | 在册项目 | 48 |
 | 门禁分布 | G0 42 / G1 0 / G2 6 / G3 0 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
-| 阻塞项 | 0 |
+| 阻塞项 | 1 |
 | 超 14 天未更新 | 0 |
 
 ## 2. 按波次
@@ -32,7 +32,7 @@
 | RVV-003 | `media-libs/libpng` | `libpng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-004 | `sys-libs/zlib-ng` | `zlib-ng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
-| RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G2 | - | 2026-11-13 | - |
+| RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G2 | - | 2026-11-13 | riscv 侧缺 libgpg-error>=1.56（容器 1.47）；正在用 debian sid 1.61 源码烤镜像 |
 | RVV-007 | `media-libs/opencv` | `opencv-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
 | RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
 | RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
@@ -75,4 +75,8 @@
 | RVV-046 | `media-libs/libsdl2` | `SDL2-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
 | RVV-047 | `games-board/stockfish` | `stockfish-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
 | RVV-048 | `app-crypt/johntheripper` | `john-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
+
+## 4. 阻塞项
+
+- `dev-libs/libgcrypt`（G2）：riscv 侧缺 libgpg-error>=1.56（容器 1.47）；正在用 debian sid 1.61 源码烤镜像
 
