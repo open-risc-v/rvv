@@ -40,7 +40,7 @@ A/B 的唯一变量仍是源码树：A 用 `src/`（上游快照 + 后续内核�
 |---|---|---|---|
 | meson | pixman | 十几秒 | `-Ddefault_library=static` |
 | cmake | libpng / zlib-ng / libjpeg-turbo | 十几秒 ~ 半分钟 | libjpeg-turbo 带 nasm，仍很快 |
-| perl Configure | openssl | **分钟级，六项最慢** | 两次 `make`（build_sw + install_sw），A/B 合计最贵 |
+| perl Configure | openssl | **分钟级，六项最慢** | out-of-source；两次 `make`（build_sw + install_sw），A/B 合计最贵 |
 | autotools | libgcrypt | 半分钟 | 只有 `configure.ac`，要 `autoreconf`；为不弄脏 baseline，复制到 `<build>/pkg/src` 再生成 |
 
 结论：**openssl 是 W1 的构建时间大头**，W2 里同类（perl Configure / 大 autotools）工程排期时
@@ -55,6 +55,12 @@ A/B 的唯一变量仍是源码树：A 用 `src/`（上游快照 + 后续内核�
 3. **语料太"好压"**：libpng 纯渐变 131×99 只压到 921 B，用例阈值失真。加确定性噪声
    （`x*1103515245 + y*12345`）后恢复到 28936 B，filter 分支才真正被覆盖。
 4. **autotools 脏树**：libgcrypt 直接在 `baseline/` 跑 `autoreconf` 会改动唯一参照。
+5. **源码树内 configure**：openssl 首版在 `src/` 里 `perl ./Configure`，把 `Makefile` 和 `.d` 写进了
+   `baseline/`（该工程 `src`/`baseline` 差异 1890 行，全是生成物）。已改 out-of-source，
+   重编后探针哈希不变（`sha256=b5c66c…`），两侧 `diff -r` 回到 0 行。
+6. **快照漏文件**：openssl 自带 `.gitignore` 遮蔽了 26 个真实源码（含 `include/arch/riscv_arch.def`），
+   `git add -A` 没纳入，`git clean -dfx` 把它们从 `src` 删掉了。已 `git add -f` 补全，
+   现在三棵树的对照关系可复现。
 
 ## 5. 状态与证据
 
