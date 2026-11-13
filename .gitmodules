@@ -16,3 +16,21 @@
 [submodule "projects/zlib-ng-rvv"]
 	path = projects/zlib-ng-rvv
 	url = ../zlib-ng-rvv
+[submodule "projects/opus-rvv"]
+	path = projects/opus-rvv
+	url = ../opus-rvv
+[submodule "projects/libwebp-rvv"]
+	path = projects/libwebp-rvv
+	url = ../libwebp-rvv
+[submodule "projects/libvpx-rvv"]
+	path = projects/libvpx-rvv
+	url = ../libvpx-rvv
+[submodule "projects/openh264-rvv"]
+	path = projects/openh264-rvv
+	url = ../openh264-rvv
+[submodule "projects/libaom-rvv"]
+	path = projects/libaom-rvv
+	url = ../libaom-rvv
+[submodule "projects/webrtc-ap-rvv"]
+	path = projects/webrtc-ap-rvv
+	url = ../webrtc-ap-rvv

@@ -7,9 +7,9 @@
 | 指标 | 值 |
 |---|---|
 | 在册项目 | 48 |
-| 门禁分布 | G0 42 / G1 0 / G2 6 / G3 0 / G4 0 / G5 0 |
+| 门禁分布 | G0 36 / G1 1 / G2 11 / G3 0 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
-| 阻塞项 | 0 |
+| 阻塞项 | 1 |
 | 超 14 天未更新 | 0 |
 
 ## 2. 按波次
@@ -33,12 +33,12 @@
 | RVV-004 | `sys-libs/zlib-ng` | `zlib-ng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G2 | - | 2026-11-13 | - |
-| RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
-| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
-| RVV-010 | `media-libs/openh264` | `openh264-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
-| RVV-017 | `media-libs/opus` | `opus-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
-| RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | P0 | W2 | G0 | - | 2026-11-13 | - |
-| RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | G0 | - | 2026-11-13 | - |
+| RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
+| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
+| RVV-010 | `media-libs/openh264` | `openh264-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
+| RVV-017 | `media-libs/opus` | `opus-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
+| RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | P0 | W2 | G1 | - | 2026-11-13 | abseil(subproject) 的头与 libabsl_*.a 未装进 prefix，pkg_apm.cpp 找不到 absl/base/config.h |
+| RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | G2 | - | 2026-11-13 | - |
 | RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | G0 | - | 2026-11-13 | - |
 | RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | G0 | - | 2026-11-13 | - |
 | RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G0 | - | 2026-11-13 | - |
@@ -75,4 +75,8 @@
 | RVV-042 | `media-tv/kodi` | `kodi-rvv` | P2 | W6 | G0 | - | 2026-11-13 | - |
 | RVV-024 | `media-libs/speex` | `libspeex-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
 | RVV-045 | `media-video/vlc` | `vlc-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
+
+## 4. 阻塞项
+
+- `media-libs/webrtc-audio-processing`（G1）：abseil(subproject) 的头与 libabsl_*.a 未装进 prefix，pkg_apm.cpp 找不到 absl/base/config.h
 
