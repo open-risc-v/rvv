@@ -146,3 +146,30 @@ x86 lane 数设计、尾块处理写死。
 | 7 | 上游化（PR 或维护分支） | G5 |
 
 **禁止跳步**：没有 G2 的基线就直接优化，最后无法给出可信加速比——这是本工程最常见的返工原因。
+
+## 构建环境：一律 Linux 容器，宿主只当编辑器
+
+从 W1/W2 的 12 个包起，**任何编译（native A/B 与 riscv64 交叉）都在 Linux 容器里做**，
+macOS 宿主不参与编译。理由不是偏好，是三个已实际踩到的问题：
+
+1. 宿主特有的链接问题会伪装成移植问题。`webrtc-audio-processing` 的 upstream `examples`
+   在 macOS 上缺 CoreFoundation 符号，换 Linux 后完全消失，不必给上游打补丁。
+2. native 与 riscv 必须同 glibc、同编译器版本，否则两侧差异分不清是架构还是 C 库。
+3. 依赖库的同版本供给更容易：容器里可以烤进指定版本的 zlib / libgpg-error（宿主 brew 版本不可控）。
+
+| 镜像 | 内容 | 用途 |
+|---|---|---|
+| `rvv-cross:1` | Ubuntu 24.04 + riscv gcc 13.3 + qemu + cmake/ninja/meson/autotools | CMake/meson/autotools 上游交叉编 |
+| `rvv-cross:2` | `rvv-cross:1` + `g++-riscv64-linux-gnu` | 探针是 C++ 或上游含 C++（libvpx/libaom/openh264/webrtc-ap） |
+| `rvv-cross-gperr:3` | 上述 + riscv 版 gpg-error 1.61（`/opt/gpg-error`）+ `gpg-error-config` shim | libgcrypt 交叉 |
+| `rvv-build:1` | `rvv-cross:2` + zlib1g-dev + native gpg-error 1.61（`/opt/gpg-error-native`） | native 侧需要 zlib / gpg-error |
+| `rvv-build:2` | `rvv-build:1` + `gpg-error-config` shim | libgcrypt native A/B |
+
+工程侧约定（骨架已带）：
+
+- `./scripts/native-baseline.sh` —— 把 `./test/run_ab.sh` 丢进容器跑 native A/B；
+- `./scripts/cross-baseline.sh` —— 容器内编 riscv64 + `qemu-riscv64 -L /usr/riscv64-linux-gnu` 跑探针。
+
+两个必须遵守的细节：`run_ab.sh` 执行用例要用 `bash`（Ubuntu 的 `/bin/sh` 是 dash，
+`set -o pipefail` 会失败并把用例全算成 SKIP，最后打印 "ALL PASS（0 个用例）" 的假绿）；
+两侧的依赖提供方要一致（如 libpng 必须两侧都用 zlib-ng，否则码流字节天然不同）。

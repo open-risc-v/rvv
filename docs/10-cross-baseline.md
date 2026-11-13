@@ -8,7 +8,8 @@ native 上的 A/B 只回答"上游能编、真实调用路径能跑、门禁通�
 
 | 项 | 值 |
 |---|---|
-| 镜像 | `rvv-cross:1`（`speex-rvv-buildenv` + ninja / meson / autoconf / automake / libtool / pkg-config / gperf） |
+| 镜像 | `rvv-cross:1/2`（Ubuntu 24.04 + riscv gcc/g++ 13.3 + qemu + cmake/ninja/meson/autotools）；native 侧用 `rvv-build:1/2`（+ zlib1g-dev、gpg-error 1.61） |
+| 编译位置 | **一律在 Linux 容器内，宿主（macOS）只当编辑器**。native A/B 走各工程 `./scripts/native-baseline.sh` |
 | 编译器 | `riscv64-linux-gnu-gcc 13.3`（Ubuntu 24.04） |
 | sysroot | `/usr/riscv64-linux-gnu` |
 | 执行 | `qemu-riscv64 -L /usr/riscv64-linux-gnu`（**功能判定，不是性能**） |
@@ -24,17 +25,18 @@ native 上的 A/B 只回答"上游能编、真实调用路径能跑、门禁通�
 | zlib-ng-rvv | CMake（`ZLIB_COMPAT=ON`） | `in=200003 out=73562 crc=2644adc5 fnv=3bb0c93b653afa83` | 同左 | 一致（压缩字节也一致） |
 | libjpeg-turbo-rvv | CMake（`WITH_SIMD=ON`） | `size=128x96 jpeg=2799 fnv_jpeg=f0dd2e9ada7876e4 fnv_px=79887ab513b04ba1` | 同左 | 一致（JPEG 字节也一致） |
 | pixman-rvv | meson（`--cross-file`） | `size=129x97 fnv=066ba22180589ab5` | 同左 | 一致（PPM 字节也一致） |
-| libpng-rvv | CMake（`PNG_TESTS=OFF`） | `size=131x99 png=28995 fnv_png=3bd158cd… fnv_px=7322844870c2c46b` | `png=28936 fnv_png=cf1f4f33… fnv_px=7322844870c2c46b` | **像素一致、码流不同** |
+| libpng-rvv | CMake（`PNG_TESTS=OFF`） | `size=131x99 png=28995 fnv_png=3bd158cd… fnv_px=7322844870c2c46b` | 同左（`png=28995 fnv_png=3bd158cd…`） | 一致（码流与像素都一致） |
 | openssl-rvv | `perl Configure linux64-riscv64` | `sha256=b5c66c… fnv_ct=cc18494f5e673a69` | 同左 | 一致（密文与摘要都一致） |
 | libgcrypt-rvv | autotools（`autoreconf -fi`） | `n=65536 ver=1.12.5-unknown sha256=8ae5324f… fnv_ct=1b61c683d7e61c03` | 同左 | 一致（摘要与密文都一致） |
 
-### libpng 的差异必须写清楚
+### libpng 的 zlib 提供方必须两侧一致
 
-riscv 侧的 zlib 由 `../zlib-ng-rvv/build/riscv64-b/prefix` 提供，native 侧用系统 zlib。
-deflate 实现不同 ⇒ 压缩字节不同（28995 vs 28936），但**解码后的像素哈希完全一致**
-（`fnv_px` 相同）。所以这一项的判据是"像素一致"，不是"码流一致"。
-想拿到码流也一致的结论，只有两条路：让 native 侧也用同一个 zlib 提供方，或把 riscv 侧
-换成系统 zlib（容器里有，但版本与 native SDK 的不同，同样不保证字节一致）。
+libpng 的输出字节直接由 zlib 决定，所以**两侧必须用同一个 zlib 实现**才谈得上逐字节。
+之前 native 走宿主系统 zlib、riscv 走 `zlib-ng` 前缀，压缩字节不同（28936 vs 28995），
+只有像素哈希一致；这是"zlib 不同"，不是移植引入的差异。
+现在 `libpng-rvv/scripts/native-baseline.sh` 也挂 `../zlib-ng-rvv` 的 native 前缀，
+两侧同为 zlib-ng（ZLIB_COMPAT）⇒ `png=28995 fnv_png=3bd158cd…` 与 riscv 侧完全相同。
+判据回到"逐字节一致"，不再需要"像素一致"这种降级口径。
 
 ## 3. 这一轮证明了什么、没证明什么
 
@@ -89,8 +91,8 @@ docker build -t rvv-cross-gperr:3 .
 ## 6. 复现
 
 ```bash
-# 单项
-cd ~/work/zlib-ng-rvv && ./scripts/cross-baseline.sh
+# 单项（native 在容器内跑 A/B，交叉在容器内跑 riscv64 + qemu）
+cd ~/work/zlib-ng-rvv && ./scripts/native-baseline.sh && ./scripts/cross-baseline.sh
 
 # 想看向量路径（上游自带 RVV 代码时）
 MARCH=rv64gcv ./scripts/cross-baseline.sh
