@@ -75,14 +75,14 @@ agent 回报 → 派工方跑验收 → 通过则 `gate` 升一级 + 写 `eviden
 
 ## 8. 当前进度
 
-| 工程 | 门禁 | 上游固定点 | 骨架 | baseline | src 快照 | 本机回归 |
-|---|---|---|---|---|---|---|
-| `pixman-rvv` | G1 | `3174212a` | ✔ | ✔ | ✔ | build + diff 2/2 + run_ab PASS |
-| `libjpeg-turbo-rvv` | G1 | `3ef3367e` | ✔ | ✔ | ✔ | 同上 |
-| `openssl-rvv` | G1 | `3f11738c` | ✔ | ✔ | ✔ | 同上 |
-| `libgcrypt-rvv` | G1 | `88563e87` | ✔ | ✔ | ✔ | 同上 |
-| `libpng-rvv` | G1 | `7ef5852d` | ✔ | ✔ | ✔ | 同上 |
-| `zlib-ng-rvv` | G1 | `6727d883` | ✔ | ✔ | ✔ | 同上 |
+| 工程 | 门禁 | 上游固定点 | 上游构建系统 | 真实用例 | 证据 |
+|---|---|---|---|---|---|
+| `pixman-rvv` | **G2** | `3174212a` | meson | fill + OVER 合成 + 线性渐变 | `docs/evidence/G2-20261113.md` |
+| `libjpeg-turbo-rvv` | **G2** | `3ef3367e` | cmake | 编码→解码回环（q85/ISLOW） | 同上 |
+| `libpng-rvv` | **G2** | `7ef5852d` | cmake | 全过滤类型编码→解码回环 | 同上 |
+| `zlib-ng-rvv` | **G2** | `6727d883` | cmake | deflate/inflate 回环 | 同上 |
+| `openssl-rvv` | **G2** | `3f11738c` | perl Configure | AES-128-CBC + SHA-256 | 同上 |
+| `libgcrypt-rvv` | **G2** | `88563e87` | autotools | SHA-256 + AES-128-CBC | 同上 |
 
-下一步（任一工程）：填 `cmake/upstream.cmake` → 真实用例进 `test/cases/` → `run_ab.sh` 出现
-第一条真实用例 PASS 即 G2。这一步**必须**跑上游构建，是第一个需要人评审的节点。
+六项都已 `run_ab.sh` **ALL PASS（2 个用例）**。下一步进 G3：在 `src/<lib>/rvv/` 写内核，
+用 `-D_USE_RVV=ON` 交叉编译，真机跑 `pair_bench.sh` 拿加速比——那一步才有人拍板的收益问题。

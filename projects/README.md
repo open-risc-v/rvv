@@ -64,9 +64,12 @@
 
 | 包 | 工程 | 门禁 | 说明 |
 |---|---|---|---|
-| `media-libs/libjpeg-turbo` | `projects/libjpeg-turbo-rvv` | G0 | 骨架来自 Skill，本机 A/B 框架自检 PASS；上游 URL 已确认 |
-| `x11-libs/pixman` | `projects/pixman-rvv` | G1 | 上游 `3174212a`（5 个 riscv 文件，含 `pixman-rvv.c`）；`run_ab.sh` ALL PASS + `diff_kernels` 2/2（102 次比较）；**项目级排期第一项**（P0/D4/29 人日），尚未 `fetch-upstream` |
-
+| `media-libs/libjpeg-turbo` | `projects/libjpeg-turbo-rvv` | G2 | 上游 `3ef3367e`（18 个 riscv 文件）；编码→解码回环 q85/ISLOW |
+| `x11-libs/pixman` | `projects/pixman-rvv` | G2 | 上游 `3174212a`（5 个 riscv 文件，含 `pixman-rvv.c`）；`run_ab.sh` ALL PASS（框架 + pixman 合成用例）；**项目级排期第一项**（P0/D4/29 人日） |
+| `dev-libs/openssl` | `projects/openssl-rvv` | G2 | 上游 `3f11738c`（32 个 riscv 文件）；AES-128-CBC + SHA-256 用例 |
+| `dev-libs/libgcrypt` | `projects/libgcrypt-rvv` | G2 | 上游 `88563e87`（26 个 riscv 文件）；SHA-256 + AES-128-CBC 用例 |
+| `media-libs/libpng` | `projects/libpng-rvv` | G2 | 上游 `7ef5852d`（5 个 riscv 文件）；全过滤类型编码→解码回环 |
+| `sys-libs/zlib-ng` | `projects/zlib-ng-rvv` | G2 | 上游 `6727d883`（17 个 riscv 文件）；deflate/inflate 回环 |
 ## 6. 子模块的日常操作
 
 ```bash
