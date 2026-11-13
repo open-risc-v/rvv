@@ -7,7 +7,7 @@
 | 指标 | 值 |
 |---|---|
 | 在册项目 | 48 |
-| 门禁分布 | G0 26 / G1 8 / G2 14 / G3 0 / G4 0 / G5 0 |
+| 门禁分布 | G0 26 / G1 5 / G2 17 / G3 0 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
 | 阻塞项 | 0 |
 | 超 14 天未更新 | 0 |
@@ -42,11 +42,11 @@
 | RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
 | RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
-| RVV-026 | `dev-libs/botan` | `botan-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
+| RVV-026 | `dev-libs/botan` | `botan-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-028 | `sys-cluster/ceph` | `ceph-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
-| RVV-032 | `dev-cpp/eigen` | `eigen-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
-| RVV-033 | `sci-libs/fftw` | `fftw-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
+| RVV-032 | `dev-cpp/eigen` | `eigen-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
+| RVV-033 | `sci-libs/fftw` | `fftw-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-034 | `sci-libs/gdal` | `gdal-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
 | RVV-035 | `sci-chemistry/gromacs` | `gromacs-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
 | RVV-019 | `media-libs/speexdsp` | `speexdsp-rvv` | P1 | W4 | G0 | - | 2026-11-13 | - |
