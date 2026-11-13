@@ -26,7 +26,7 @@ native 上的 A/B 只回答"上游能编、真实调用路径能跑、门禁通�
 | pixman-rvv | meson（`--cross-file`） | `size=129x97 fnv=066ba22180589ab5` | 同左 | 一致（PPM 字节也一致） |
 | libpng-rvv | CMake（`PNG_TESTS=OFF`） | `size=131x99 png=28995 fnv_png=3bd158cd… fnv_px=7322844870c2c46b` | `png=28936 fnv_png=cf1f4f33… fnv_px=7322844870c2c46b` | **像素一致、码流不同** |
 | openssl-rvv | `perl Configure linux64-riscv64` | `sha256=b5c66c… fnv_ct=cc18494f5e673a69` | 同左 | 一致（密文与摘要都一致） |
-| libgcrypt-rvv | autotools（`autoreconf -fi`） | 见 §4 | — | **受阻：riscv 侧 libgpg-error 版本** |
+| libgcrypt-rvv | autotools（`autoreconf -fi`） | `n=65536 ver=1.12.5-unknown sha256=8ae5324f… fnv_ct=1b61c683d7e61c03` | 同左 | 一致（摘要与密文都一致） |
 
 ### libpng 的差异必须写清楚
 
@@ -50,7 +50,9 @@ deflate 实现不同 ⇒ 压缩字节不同（28995 vs 28936），但**解码后
   `rv64gc` 不含向量指令，两侧机器码等价。
 - 没有性能数字。qemu-user 的耗时不能当性能结论，G3 的真机数据来自 `benchmark/pair_bench.sh`。
 
-## 4. libgcrypt：依赖版本，不是架构问题
+## 4. libgcrypt：已解除（2026-11-13 晚）
+
+**结论**：不是架构问题，是依赖版本问题；用官方 tar 直接交叉编 1.61 就好了。
 
 libgcrypt master 的 `configure` 要求 `libgpg-error >= 1.56`：
 
@@ -59,13 +61,24 @@ checking for GPG Error - version >= 1.56... no
 configure: error: libgpg-error is needed.
 ```
 
-容器（Ubuntu 24.04）只有 `libgpg-error 1.47`，且 `/usr/riscv64-linux-gnu` 里根本没有
-这份库的 riscv 版本（只有宿主 arm64 的 `gpg-error.h` / `libgpg-error.a`）。
-已确认的解法方向：取 **debian sid 的源码包（1.61）**，在 `rvv-cross:1` 里用 Ubuntu 24 的
-riscv sysroot 交叉编到 `/opt/gpg-error`，再让 libgcrypt 用
-`--with-libgpg-error-prefix=/opt/gpg-error`、探针用 `-DGPGERR_ROOT=/opt/gpg-error`。
-镜像 `rvv-cross-gperr:2` 就是这条路径的产物；构建慢在 sid 源码包索引，不成功就退回
-"手工把 1.61 源码放进镜像"。
+容器（Ubuntu 24.04）只有 `libgpg-error 1.47`。之前的失败是走 `apt-get source` 卡在
+debian sid 索引（不产出任何文件），不是网络不通——**直接下载 gnupg.org 官方 tar 即可**：
+
+```bash
+curl -LO https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.61.tar.bz2     # 1.1 MB，秒下
+# Dockerfile：FROM rvv-cross:1 → configure --host=riscv64-linux-gnu --prefix=/opt/gpg-error
+docker build -t rvv-cross-gperr:3 .
+```
+
+两个真实坑（都已修进镜像/脚本）：
+
+| 坑 | 现象 | 处理 |
+|---|---|---|
+| 1.61 不再安装 `gpg-error-config` | `checking for GPG Error - version >= 1.56... no`，且 `/opt/gpg-error/bin/gpg-error-config: No such file` | 镜像里加 shim：`--version/--cflags/--libs/--host` 走固定值，其余转给 `gpgrt-config` |
+| libgcrypt 的 `tests/` 不吃 `GPG_ERROR_CFLAGS` | `tests/t-lock.c: fatal error: gpg-error.h: No such file` | configure 传 `CPPFLAGS=-I/opt/gpg-error/include` |
+
+结果：`rvv-cross-gperr:3` 里 `libgpg-error.a` 是 **riscv64** 静态库（1.61），
+`libgcrypt` 交叉后探针输出与 native 逐字段一致（见 §2）。
 
 ## 5. 对计划的影响
 
