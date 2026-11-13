@@ -7,7 +7,7 @@
 | 指标 | 值 |
 |---|---|
 | 在册项目 | 48 |
-| 门禁分布 | G0 26 / G1 5 / G2 17 / G3 0 / G4 0 / G5 0 |
+| 门禁分布 | G0 26 / G1 3 / G2 19 / G3 0 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
 | 阻塞项 | 0 |
 | 超 14 天未更新 | 0 |
@@ -39,9 +39,9 @@
 | RVV-017 | `media-libs/opus` | `opus-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
 | RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
 | RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | G2 | - | 2026-11-13 | - |
-| RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
+| RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
-| RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
+| RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-026 | `dev-libs/botan` | `botan-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-028 | `sys-cluster/ceph` | `ceph-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
