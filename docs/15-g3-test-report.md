@@ -37,21 +37,47 @@ A/B 口径（全部包统一）：
 `pixel mismatch`（exit 11），正常 A 侧则通过——证明 RVV 内核确实被执行。
 这一步已固化成 `libpng-rvv/scripts/mutation-check.sh`，其余"打开即用"的包应同样补一次。
 
-## 3. 性能结果：缺真机，未填
+## 3. 真机性能（SpacemiT K3 / Bianbu，<BOARD_HOST>）
 
-G3 的性能门禁规定只能上真机。当前环境里没有可达的 RISC-V 板（机器上没有任何能连到
-riscv 主机的 ssh 配置），因此性能列为空，**不拿 qemu 数字充数**。
+板子：`Linux k3 6.18.3 riscv64`，8 核 / 16 GB，`isa` 含 `rv64imafdcvh` + RVV 1.0
+（`zve32x/zve64d/zve64f`）+ 全套 `Zvk*`（`zvkned/zvknha/zvknhb/zvksh/zvkg/zvkb`）。
+`/proc/cpuinfo` 未暴露 `vlenb`，VLEN 待另测。
 
-每个包都已产出可直接上板的静态二进制与驱动：
+方法：每包 A/B **交替 5 轮**，每轮内侧各跑 3 次取最优，取中位；全部 `-static`，
+`data/board-ab.log` 为原始记录。
+
+| 包 | 指标 | A（RVV/asm） | B（标量 C） | 加速比 |
+|---|---|---|---|---|
+| pixman | OVER 1024×1024 | 1.485 ms，706.2 mpx/s | 4.66 ms，225.1 mpx/s | **3.14×** |
+| zlib-ng | adler32 16 MiB | 3.943 ms（0.235 ns/B） | 3.650 ms（0.218 ns/B） | **0.93×（慢 7%）** |
+| zlib-ng | deflate 1 MiB | 10.24 ms | 12.33 ms | **1.20×** |
+| libjpeg-turbo | 压缩 1024×768 q90 | 14.04 ms | 25.29 ms | **1.80×** |
+| libjpeg-turbo | 解压 1024×768 | 13.16 ms | 20.57 ms | **1.56×** |
+| libgcrypt | SHA-256 16 MiB | 1208.4 MBps | 100.8 MBps | **12.0×** |
+| libgcrypt | AES-256-CTR 16 MiB | 2005.7 MBps | 50.9 MBps | **39.4×** |
+| libpng | 解码 1024×768 | 3.69 ms | 3.81 ms | **1.03×** |
+| libaom | — | 无 bench（5 帧 harness 太短） | — | — |
+
+### 3.1 三个必须说清的口径问题
+
+1. **libgcrypt 的 39× 不是纯 RVV**。`nm` 确认 A 侧编入了
+   `_gcry_aes_riscv_zvkned_ctr_enc` 等 12 个 Zvkned 符号——K3 自带 `zvkned`，AES-CTR
+   走的是加密扩展而非向量 gather；SHA-256 同理走 `zvknh`。加速比是"RVV + Zvk* 对 C"，
+   报告里不能写成"RVV 让 AES 快 39 倍"。
+2. **zlib-ng 的 adler32 RVV 比标量慢 7%**。三处证据一致（5 轮全部 on 更慢），
+   不是噪声。adler32 是 8 bit 累加 + 少量 16 bit 进位，标量版在 8 核乱序核上已接近
+   每周期 1 字节；RVV 版受 `vlenb` 与累加归约开销拖累。**这是"上游自带 RVV 也可能负优化"
+   的第一个实证**，值得单独记档。
+3. **libpng 只有 1.03×**。行过滤本身只占解码时间的一小块，主体是 inflate（两侧共用
+   zlib-ng 的**标量**库）。要看到真实收益，得把 libpng 接上 zlib-ng 的 RVV 版本再测一次。
+
+### 3.2 上板复现
 
 ```bash
-# 板上执行（自动完成 环境探测 → 推包 → A/B 交替跑 → 加速比）
-~/work/rvv/scripts/board-ab.sh pixman  <board-host>
-~/work/rvv/scripts/board-ab.sh zlib-ng <board-host>
+~/work/rvv/scripts/board-ab.sh pixman <board-host>
 ```
 
-待补的数据（每包 3 行）：板上 `uname -a` 与 `isa`（确认 RVV 1.0 与 VLEN）、
-A/B 各自的 `ns_per_px` 或 `*_ms`、加速比。
+板上路径 `/root/rvv-k/<pkg>/{on,off}/bench`，驱动 `/root/rvv-k/ab-run.sh`（交替 5 轮）。
 
 ## 4. 队列（按 SSE/NEON 规模与上游现状排）
 
