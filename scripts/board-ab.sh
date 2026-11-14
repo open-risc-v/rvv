@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# 板上 bench 的文件名不一致（pixman 是 bench_over），这里统一映射
+bench_name() {
+  case "$1" in
+    pixman) echo bench_over ;;
+    *)      echo bench ;;
+  esac
+}
 # 真机 A/B：把某个工程的 G3 产物（A=RVV / B=标量）送到板上跑，取性能数字。
 # 用法：./scripts/board-ab.sh pixman <board-host> [bench 参数]
 # 前提：板上能跑静态 riscv64 二进制，A 侧 CPU 必须支持 RVV 1.0（vlen>=128）。

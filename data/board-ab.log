@@ -1,0 +1,63 @@
+### pixman
+on  | over 1024x1024 best_ns=1503413 ns_per_px=1.434 mpx_s=697.5
+off | over 1024x1024 best_ns=4658903 ns_per_px=4.443 mpx_s=225.1
+on  | over 1024x1024 best_ns=1482329 ns_per_px=1.414 mpx_s=707.4
+off | over 1024x1024 best_ns=4667238 ns_per_px=4.451 mpx_s=224.7
+on  | over 1024x1024 best_ns=1484746 ns_per_px=1.416 mpx_s=706.2
+off | over 1024x1024 best_ns=4658529 ns_per_px=4.443 mpx_s=225.1
+on  | over 1024x1024 best_ns=1489204 ns_per_px=1.420 mpx_s=704.1
+off | over 1024x1024 best_ns=4658279 ns_per_px=4.442 mpx_s=225.1
+on  | over 1024x1024 best_ns=1485080 ns_per_px=1.416 mpx_s=706.1
+off | over 1024x1024 best_ns=4728279 ns_per_px=4.509 mpx_s=221.8
+### zlib-ng
+on  | adler16M_ns=3940948 ns_per_byte=0.235 deflate1M_ns=10243305
+off | adler16M_ns=3649990 ns_per_byte=0.218 deflate1M_ns=12337299
+on  | adler16M_ns=3949322 ns_per_byte=0.235 deflate1M_ns=10245972
+off | adler16M_ns=3633031 ns_per_byte=0.217 deflate1M_ns=12404633
+on  | adler16M_ns=3949947 ns_per_byte=0.235 deflate1M_ns=10222805
+off | adler16M_ns=3646157 ns_per_byte=0.217 deflate1M_ns=12384133
+on  | adler16M_ns=3942239 ns_per_byte=0.235 deflate1M_ns=10230972
+off | adler16M_ns=3651324 ns_per_byte=0.218 deflate1M_ns=12312550
+on  | adler16M_ns=3943073 ns_per_byte=0.235 deflate1M_ns=10343888
+off | adler16M_ns=3652990 ns_per_byte=0.218 deflate1M_ns=12308966
+### libjpeg-turbo
+on  | 
+off | 
+on  | 
+off | 
+on  | 
+off | 
+on  | 
+off | 
+on  | 
+off | 
+### libgcrypt
+on  | sha256_16M_ns=13236505 aesctr_16M_ns=7977186 sha256_MBps=1208.8 aesctr_MBps=2005.7
+off | sha256_16M_ns=158835771 aesctr_16M_ns=314324926 sha256_MBps=100.7 aesctr_MBps=50.9
+on  | sha256_16M_ns=13243838 aesctr_16M_ns=7950978 sha256_MBps=1208.1 aesctr_MBps=2012.3
+off | sha256_16M_ns=158718688 aesctr_16M_ns=314269842 sha256_MBps=100.8 aesctr_MBps=50.9
+on  | sha256_16M_ns=13241130 aesctr_16M_ns=7971853 sha256_MBps=1208.4 aesctr_MBps=2007.1
+off | sha256_16M_ns=159418143 aesctr_16M_ns=315907962 sha256_MBps=100.4 aesctr_MBps=50.6
+on  | sha256_16M_ns=13239672 aesctr_16M_ns=7951936 sha256_MBps=1208.5 aesctr_MBps=2012.1
+off | sha256_16M_ns=158475688 aesctr_16M_ns=314232008 sha256_MBps=101.0 aesctr_MBps=50.9
+on  | sha256_16M_ns=13232380 aesctr_16M_ns=7973687 sha256_MBps=1209.2 aesctr_MBps=2006.6
+off | sha256_16M_ns=158761395 aesctr_16M_ns=314197341 sha256_MBps=100.8 aesctr_MBps=50.9
+### libpng
+on  | cannot open sample.png
+off | cannot open sample.png
+on  | cannot open sample.png
+off | cannot open sample.png
+on  | cannot open sample.png
+off | cannot open sample.png
+on  | cannot open sample.png
+off | cannot open sample.png
+on  | cannot open sample.png
+off | cannot open sample.png
+
+### libjpeg-turbo（重跑，bench_jpeg 修正后）
+on  | jpeg 1024x768 compress_ms=14.04 decompress_ms=13.16
+off | jpeg 1024x768 compress_ms=25.29 decompress_ms=20.57
+
+### libpng（1024x768 大图）
+on  | png 1024x768 decode_ms=3.69
+off | png 1024x768 decode_ms=3.81
