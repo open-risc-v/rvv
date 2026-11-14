@@ -1,13 +1,13 @@
 # 移植工程看板
 
-> 由 `scripts/dashboard.py` 生成于 2026-11-13；数据源 `data/status.csv` + `data/plan.csv`。改数据，不要改这里。
+> 由 `scripts/dashboard.py` 生成于 2026-11-14；数据源 `data/status.csv` + `data/plan.csv`。改数据，不要改这里。
 
 ## 1. 总览
 
 | 指标 | 值 |
 |---|---|
 | 在册项目 | 48 |
-| 门禁分布 | G0 26 / G1 3 / G2 19 / G3 0 / G4 0 / G5 0 |
+| 门禁分布 | G0 26 / G1 2 / G2 19 / G3 1 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
 | 阻塞项 | 0 |
 | 超 14 天未更新 | 0 |
@@ -27,7 +27,7 @@
 
 | 编号 | 包 | 工程 | 优先级 | 波次 | 门禁 | 负责人 | 更新 | 阻塞 |
 |---|---|---|---|---|---|---|---|---|
-| RVV-001 | `media-libs/libjpeg-turbo` | `libjpeg-turbo-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
+| RVV-001 | `media-libs/libjpeg-turbo` | `libjpeg-turbo-rvv` | P0 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-002 | `x11-libs/pixman` | `pixman-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-003 | `media-libs/libpng` | `libpng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-004 | `sys-libs/zlib-ng` | `zlib-ng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
@@ -48,7 +48,7 @@
 | RVV-032 | `dev-cpp/eigen` | `eigen-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-033 | `sci-libs/fftw` | `fftw-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-034 | `sci-libs/gdal` | `gdal-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
-| RVV-035 | `sci-chemistry/gromacs` | `gromacs-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
+| RVV-035 | `sci-chemistry/gromacs` | `gromacs-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-019 | `media-libs/speexdsp` | `speexdsp-rvv` | P1 | W4 | G0 | - | 2026-11-13 | - |
 | RVV-020 | `media-libs/flac` | `flac-rvv` | P1 | W4 | G0 | - | 2026-11-13 | - |
 | RVV-025 | `dev-libs/nettle` | `nettle-rvv` | P1 | W4 | G0 | - | 2026-11-13 | - |
