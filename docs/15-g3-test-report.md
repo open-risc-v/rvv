@@ -65,8 +65,12 @@ A/B 各自的 `ns_per_px` 或 `*_ms`、加速比。
 | libgcrypt | 功能验收完成 |
 | libaom | 功能验收完成 |
 | libpng | 功能验收完成（需手工接线，见 §2.1） |
-| eigen | 2 个（部分 packet math），待做 |
-| gromacs | 1 个（很局部），主体仍需写 |
+
+**修正**：早先用 `grep -ri riscv` 统计时，eigen / gromacs / botan / cryptopp / openssl
+被算成"已有 RVV"，复核后是误判——它们的 riscv 字样全部出现在 CI 脚本和测试文件里，
+没有任何 `__riscv_v*` intrinsic 或 `riscv_vector.h`。所以真正"上游自带 RVV"的是
+**6 个包**（pixman、zlib-ng、libjpeg-turbo、libgcrypt、libaom、libpng），现已全部功能验收。
+其余 14 个都属于"要从零写内核"。
 
 需要写内核（按收益排序）：
 
@@ -80,7 +84,9 @@ A/B 各自的 `ns_per_px` 或 `*_ms`、加速比。
 8. **zimg**（17/20，先 resize 水平卷积）
 9. **x264**（24/19，先 SATD/SAD）
 10. **libde265**（9/8，先 IDCT）
-11. **botan / openssl**（AES/CTR，openssl 优先用 rv64gcv asm 后端）
+11. **botan / openssl**（AES/CTR；openssl 可先走 rv64gcv 汇编后端）
+12. **eigen**（无上游 RVV，packet math 要自写，量大但模式清晰）
+13. **gromacs**（无上游 RVV，G2 已用 GMX_SIMD=None，内核要自己起）
 
 ## 5. 本轮顺带修掉的通用坑
 
