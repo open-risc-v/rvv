@@ -7,7 +7,7 @@
 | 指标 | 值 |
 |---|---|
 | 在册项目 | 48 |
-| 门禁分布 | G0 26 / G1 2 / G2 19 / G3 1 / G4 0 / G5 0 |
+| 门禁分布 | G0 26 / G1 2 / G2 18 / G3 2 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
 | 阻塞项 | 0 |
 | 超 14 天未更新 | 0 |
@@ -30,7 +30,7 @@
 | RVV-001 | `media-libs/libjpeg-turbo` | `libjpeg-turbo-rvv` | P0 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-002 | `x11-libs/pixman` | `pixman-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-003 | `media-libs/libpng` | `libpng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
-| RVV-004 | `sys-libs/zlib-ng` | `zlib-ng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
+| RVV-004 | `sys-libs/zlib-ng` | `zlib-ng-rvv` | P0 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G2 | - | 2026-11-13 | - |
 | RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |

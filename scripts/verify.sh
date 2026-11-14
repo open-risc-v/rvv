@@ -101,7 +101,7 @@ for f in README.md docs/00-program-model.md docs/01-difficulty-rubric.md \
          docs/02-priority-rules.md docs/03-rvv-playbook.md docs/04-isa-mapping.md \
          docs/05-waves.md docs/06-acceptance.md docs/07-ai-schedule.md \
          docs/08-subagent-protocol.md docs/09-w1-baseline.md docs/10-cross-baseline.md \
-         docs/11-build-order.md docs/12-w2-baseline.md docs/13-w3-kickoff.md docs/14-g3-kernel-plan.md data/waves.csv data/deps.csv data/workorders/INDEX.md \
+         docs/11-build-order.md docs/12-w2-baseline.md docs/13-w3-kickoff.md docs/14-g3-kernel-plan.md docs/15-g3-test-report.md data/waves.csv data/deps.csv data/workorders/INDEX.md \
          projects/README.md STATUS.md; do
   if [ -s "$f" ]; then ok "$f"; else bad "$f 缺失"; fi
 done

@@ -1,8 +1,8 @@
 id,pkg,project,wave,priority,gate,owner,updated,evidence,blocker
-RVV-001,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,W1,P0,G3,,2026-11-14,pixman-rvv/docs/evidence/G3-kernel-20261114.md: 上游 RVV 路径与 rvv=disabled 逐字节一致 066ba22180589ab5；真机性能待跑,
+RVV-001,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,W1,P0,G3,,2026-11-14,libjpeg-turbo-rvv/docs/evidence/G3-kernel-20261114.md: RVV 后端与纯 C 码流/像素逐字节一致；真机性能待跑,
 RVV-002,x11-libs/pixman,pixman-rvv,W1,P0,G2,,2026-11-13,pixman-rvv/docs/evidence/G2-20261113.md: fill+OVER+渐变，run_ab 2/2 PASS | CROSS-baseline-20261113.md: riscv64(rv64gc) PPM 哈希与 native 一致,
 RVV-003,media-libs/libpng,libpng-rvv,W1,P0,G2,,2026-11-13,libpng-rvv/docs/evidence/G2-20261113.md: 全过滤类型编码→解码回环，run_ab 2/2 PASS | CROSS-baseline-20261113.md: riscv64 像素哈希与 native 一致（zlib 提供方不同 ⇒ 码流不同）,
-RVV-004,sys-libs/zlib-ng,zlib-ng-rvv,W1,P0,G2,,2026-11-13,zlib-ng-rvv/docs/evidence/G2-20261113.md: deflate/inflate 回环，run_ab 2/2 PASS | CROSS-baseline-20261113.md: riscv64(rv64gc) 压缩/解压与 native 逐字段一致,
+RVV-004,sys-libs/zlib-ng,zlib-ng-rvv,W1,P0,G3,,2026-11-14,zlib-ng-rvv/docs/evidence/G3-kernel-20261114.md: WITH_RVV 开关两侧逐字节一致；真机性能待跑,
 RVV-005,dev-libs/openssl,openssl-rvv,W1,P0,G2,,2026-11-13,openssl-rvv/docs/evidence/G2-20261113.md: AES-128-CBC+SHA-256，run_ab 2/2 PASS | CROSS-baseline-20261113.md: linux64-riscv64 密文与 sha256 与 native 一致,
 RVV-006,dev-libs/libgcrypt,libgcrypt-rvv,W1,P1,G2,,2026-11-13,libgcrypt-rvv/docs/evidence/G2-20261113.md: SHA-256+AES-128-CBC，run_ab 2/2 PASS | CROSS-baseline-20261113.md: 待完成；CROSS-baseline-20261113（riscv64 与 native 全字段一致，gpg-error 1.61）,
 RVV-007,media-libs/opencv,opencv-rvv,W6,P0,G0,,2026-11-13,docs/plan.md,
