@@ -62,3 +62,4 @@ G2 只证明"交叉编译能跑、输出一致"。G3 要回答的是**换个向�
 | pixman | 功能已验收 | 上游 RVV 路径打开，与 `rvv=disabled` 逐字节一致（`fnv=066ba22180589ab5`）；性能待真机 |
 | zlib-ng | 功能已验收 | `WITH_RVV` 开关两侧一致（`fnv=3bb0c93b653afa83`）；性能待真机 |
 | libjpeg-turbo | 功能已验收 | `WITH_SIMD` 开关两侧码流+像素一致；性能待真机 |
+| libgcrypt | 功能已验收 | 默认 asm vs `--disable-asm` 两侧一致；性能待真机 |

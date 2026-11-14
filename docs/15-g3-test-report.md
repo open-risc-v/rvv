@@ -22,10 +22,20 @@ A/B 口径（全部包统一）：
 | **pixman** | `pixman-rvv.c` 约 1500 行（fill/OVER 等整套） | `rvv` vs `rvv=disabled` | `fnv=066ba22180589ab5` 两侧一致 |
 | **zlib-ng** | 4 个文件（adler32/chunkset/compare256/slide_hash） | `WITH_RVV` | `in=200003 out=73562 crc=2644adc5 fnv=3bb0c93b653afa83` 两侧一致 |
 | **libjpeg-turbo** | 16 个文件（IDCT/FDCT/色彩/采样/量化） | `WITH_SIMD` | 码流 `fnv_jpeg=f0dd2e9ada7876e4`、像素 `fnv_px=79887ab513b04ba1` 两侧一致 |
+| **libgcrypt** | 13 个文件（chacha20/poly1305/sha*/sm*/gcm/crc） | 默认 asm vs `--disable-asm` | `sha256=8ae5324f… fnv_ct=1b61c683d7e61c03` 两侧一致 |
+| **libaom** | 11 个文件（convolve/compound/wiener/cdef，高低比特深） | `ENABLE_RVV` | 码流 `fnv_bit=d74bacb1c99a8c30`、像素 `fnv_px=ab53811322a88564` 两侧一致 |
+| **libpng** | 7 个 row filter（up/sub/avg/paeth ×bpp） | `PNG_RISCV_RVV_IMPLEMENTATION` | `fnv_png=3bd158cdb34ca865`、`fnv_px=7322844870c2c46b` 两侧一致 |
 
 三项都是**逐字节相同**。libjpeg-turbo 的码流也一致这一点值得记下：它的 SIMD 内核按
 "与 C 参考实现逐位一致"设计（ISLOW 整数 IDCT、定点色彩转换），向量化不改变舍入，
 所以这里不需要容差判据。
+
+### 2.1 一个必须补的检查：变异测试
+
+"宏打开了、代码也编了，但运行时仍走 C 路径"是这类包的典型假通过。libpng 就做了变异测试：
+故意在 `png_read_filter_row_up_rvv` 的 `vse8` 后翻一个字节重编 A 侧，结果 harness 直接报
+`pixel mismatch`（exit 11），正常 A 侧则通过——证明 RVV 内核确实被执行。
+这一步已固化成 `libpng-rvv/scripts/mutation-check.sh`，其余"打开即用"的包应同样补一次。
 
 ## 3. 性能结果：缺真机，未填
 
@@ -52,9 +62,9 @@ A/B 各自的 `ns_per_px` 或 `*_ms`、加速比。
 | pixman | 功能验收完成 |
 | zlib-ng | 功能验收完成 |
 | libjpeg-turbo | 功能验收完成 |
-| libgcrypt | 13 个 RVV 文件，待做 |
-| libaom | 13 个 RVV 文件（部分 DSP），待做 |
-| libpng | 2 个（filter），待做 |
+| libgcrypt | 功能验收完成 |
+| libaom | 功能验收完成 |
+| libpng | 功能验收完成（需手工接线，见 §2.1） |
 | eigen | 2 个（部分 packet math），待做 |
 | gromacs | 1 个（很局部），主体仍需写 |
 
