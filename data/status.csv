@@ -13,7 +13,7 @@ RVV-011,media-video/ffmpeg,ffmpeg-rvv,W5,P0,G0,,2026-11-13,docs/plan.md,
 RVV-012,media-libs/libaom,libaom-rvv,W2,P1,G3,,2026-11-14,libaom-rvv/docs/evidence/G3-kernel-20261114.md: ENABLE_RVV 开关两侧一致；真机性能待跑,
 RVV-013,media-libs/x264,x264-rvv,W3,P1,G2,,2026-11-13,x264-rvv/docs/evidence/G2-baseline-20261113.md: 10 帧 690 B，fnv_bit=91e876b2…（纯 C，--disable-asm）,
 RVV-014,media-libs/zimg,zimg-rvv,W3,P1,G2,,2026-11-13,zimg-rvv/docs/evidence/G2-baseline-20261113.md: resize fnv=63a1b96d… depth fnv=1ca7dee4…，native≡riscv64,
-RVV-015,media-libs/libde265,libde265-rvv,W3,P1,G2,,2026-11-13,libde265-rvv/docs/evidence/G2-baseline-20261113.md: 解码 10 帧 61440 B，fnv_px=cf67fb99…；语料由 x265 生成并固化,
+RVV-015,media-libs/libde265,libde265-rvv,W3,P1,G2,,2026-11-15,libde265-rvv/docs/evidence/G3-kernel-addresidual-20261115.md: add_residual RVV 内核 8x8 1.9x/16x16 3.9x/32x32 3.6x（4x4 0.86x）；整链 0.999x 无收益，按负结论不升 G3,add_residual 占解码<1%，需换算术密集内核（IDCT/deblocking/qpel）
 RVV-016,media-libs/x265,x265-rvv,W4,P2,G0,,2026-11-13,docs/plan.md,
 RVV-017,media-libs/opus,opus-rvv,W2,P0,G2,,2026-11-13,opus-rvv/docs/evidence/CROSS-baseline-20261113.md: 定点 48k/20ms 120 帧，riscv64 与 native 全字段一致,
 RVV-018,media-libs/webrtc-audio-processing,webrtc-ap-rvv,W2,P0,G2,,2026-11-13,webrtc-ap-rvv/docs/evidence/G1-native-build-20261113.md + docs/12-w2-baseline.md: native A/B 与 riscv64 交叉全字段一致,

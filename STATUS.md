@@ -9,7 +9,7 @@
 | 在册项目 | 48 |
 | 门禁分布 | G0 26 / G1 2 / G2 12 / G3 8 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
-| 阻塞项 | 0 |
+| 阻塞项 | 1 |
 | 超 14 天未更新 | 0 |
 
 ## 2. 按波次
@@ -41,7 +41,7 @@
 | RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | G3 | - | 2026-11-14 | - |
 | RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
-| RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
+| RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G2 | - | 2026-11-15 | add_residual 占解码<1%，需换算术密集内核（IDCT/deblocking/qpel） |
 | RVV-026 | `dev-libs/botan` | `botan-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-028 | `sys-cluster/ceph` | `ceph-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
@@ -75,4 +75,8 @@
 | RVV-042 | `media-tv/kodi` | `kodi-rvv` | P2 | W6 | G0 | - | 2026-11-13 | - |
 | RVV-024 | `media-libs/speex` | `libspeex-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
 | RVV-045 | `media-video/vlc` | `vlc-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
+
+## 4. 阻塞项
+
+- `media-libs/libde265`（G2）：add_residual 占解码<1%，需换算术密集内核（IDCT/deblocking/qpel）
 
