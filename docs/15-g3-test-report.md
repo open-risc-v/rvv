@@ -317,3 +317,37 @@ x264 的 ME 主循环每候选 MV 都要算 SAD，16x16/8x8 是最高频两档�
 
 未做：`satd`（`--subme ≥ 4` 时比 SAD 更热，需要 4x4/8x8 Hadamard 与 `abs2` 打包）、
 4x16 尺寸、10bit 路径、运行时 CPU 探测。
+
+### 4.7 opus：celt_pitch_xcorr（内核 5.6× / 整链 1.005×）
+
+`celt_pitch_xcorr` 是上游注释点名的 "the kernel you really want to optimize"，
+x86/ARM 都有同名参照。接口固定：`xcorr[i] = Σ_j x[j]*y[i+j]`（定点 int16→int32，
+并返回 maxcorr）。
+
+接线：新增 `src/celt/riscv/pitch_xcorr_rvv.c`，由 `celt/pitch.c` 同 TU include；
+`pitch.h` 里 `OVERRIDE_PITCH_XCORR` + 宏重定向，仅 `FIXED_POINT` 生效。
+**定点下 `celt_pitch_xcorr_c` 有返回值 maxcorr（初值 1）**，宏必须用逗号表达式透传，
+否则 `pitch_search` 报 "void value not ignored"。
+
+设计要点：**4 个 lag 同时算、共用一份 x 装载**（与上游 `xcorr_kernel` 的 4-sum 结构
+对齐）——这是主要收益来源，单 lag 版只有 ~2×。归约一次到位（`vwmacc` 加宽累加 +
+末尾 `vredsum`）。
+
+真机 K3 内核级（300 次/档 ×2）：
+
+| len | max_pitch | C | RVV | 比值 |
+|---|---|---|---|---|
+| 480 | 1024 | 296–299 µs | 52.5–53.3 µs | **5.60–5.64×** |
+| 240 | 512 | 74.7–75.0 µs | 14.6 µs | **5.13×** |
+| 120 | 256 | 18.9 µs | 4.6–4.8 µs | **3.95–4.13×** |
+
+整链（120 帧 48 kHz 定点编码，5 轮交替、内侧 3 次取最优）：off 130.94/131.06/130.99/
+130.99/131.03 ms → on 130.30/130.19/130.30/130.41/130.34 ms，**≈1.005×**（5/5 同向）。
+
+**归因（写清楚，避免误读）**：pitch search 走降采样后的 4 倍域，实际调用是
+`len>>2=120`、`max_pitch>>2=256`，C 版每次只要 ~19 µs、一帧一次左右，120 帧合计
+约 2.3 ms（占 131 ms 的 1.7%），内核吃掉其中 80%，上限 ~1.4%，实测 0.5%。
+这条比 libde265 的 IDCT 更极端地印证了那条规律：**整链增益 ≈ 内核倍数 × 管线占比**。
+
+opus 真正的时间大头是 MDCT/FFT 与 `comb_filter`，不是"简单内核"，本轮不碰；
+`xcorr_kernel`（`len = ord` 只有 16–24）按"宽度决定收益"的既有结论也不做。

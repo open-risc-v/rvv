@@ -15,7 +15,7 @@ RVV-013,media-libs/x264,x264-rvv,W3,P1,G3,,2026-11-15,x264-rvv/docs/evidence/G3-
 RVV-014,media-libs/zimg,zimg-rvv,W3,P1,G2,,2026-11-13,zimg-rvv/docs/evidence/G2-baseline-20261113.md: resize fnv=63a1b96d… depth fnv=1ca7dee4…，native≡riscv64,
 RVV-015,media-libs/libde265,libde265-rvv,W3,P1,G3,,2026-11-15,libde265-rvv/docs/evidence/G3-kernel-idct8-20261115.md: 8x8 IDCT RVV 内核 1.46x（889→608ns）；整链 806.9→803.5k us = 1.004x（6/6 轮同向）；16x16 实测退步(0.975x/门控0.997x)不接线,整链收益仅 +0.4%（8x8 IDCT 占比小）；16x16/32x32 受 lastCol 稀疏截断限制，需上层传 nnz；下一步 deblocking/qpel
 RVV-016,media-libs/x265,x265-rvv,W4,P2,G0,,2026-11-13,docs/plan.md,
-RVV-017,media-libs/opus,opus-rvv,W2,P0,G2,,2026-11-13,opus-rvv/docs/evidence/CROSS-baseline-20261113.md: 定点 48k/20ms 120 帧，riscv64 与 native 全字段一致,
+RVV-017,media-libs/opus,opus-rvv,W2,P0,G3,,2026-11-15,opus-rvv/docs/evidence/G3-kernel-xcorr-20261115.md: celt_pitch_xcorr RVV（内核 5.6x，整链仅 1.005x，占比归因）；qemu 码流+PCM 与 G2 一致,整链收益 1.005x —— pitch xcorr 只占编码 ~1.7%；真正的热点 MDCT/FFT 与 comb_filter 未做；xcorr_kernel(ord 16-24) 不做
 RVV-018,media-libs/webrtc-audio-processing,webrtc-ap-rvv,W2,P0,G2,,2026-11-13,webrtc-ap-rvv/docs/evidence/G1-native-build-20261113.md + docs/12-w2-baseline.md: native A/B 与 riscv64 交叉全字段一致,
 RVV-019,media-libs/speexdsp,speexdsp-rvv,W4,P1,G0,,2026-11-13,docs/plan.md,
 RVV-020,media-libs/flac,flac-rvv,W4,P1,G0,,2026-11-13,docs/plan.md,
