@@ -383,3 +383,46 @@ opus 真正的时间大头是 MDCT/FFT 与 `comb_filter`，不是"简单内核"�
 C 循环删掉，四个尺寸都测出恒定 45.6 ns（只剩两次 `clock_gettime` 的开销），而 RVV
 侧因为走函数指针没被删，于是读出 0.24× 的假负优化。**纯函数计时必须用 `volatile`
 sink 接住返回值**——这条会影响之后所有内核 bench。
+
+### 4.9 zimg：垂直 resize 定点卷积（内核 7.6× / 整链 2.02×）
+
+zimg 的 resize 分水平/垂直两遍，都是 `filter_width` 个 tap 的加权和。垂直那遍输出列连续、
+每个输出行只换一组系数，是"多行按列加权求和"，向量化维度是列，结构最干净；bicubic 每输出
+像素要读 4 个源行，所以它就是整条 resize 的主体。本轮只做垂直，水平留 C。
+
+**接线成本主要在上游构建系统**：zimg 的 SIMD 分支是 configure 时按 `host_cpu` 写死的
+（`ZIMG_X86`/`ZIMG_ARM`），RISC-V 上原本一条分支都没有。改动：`configure.ac` 的 `AS_CASE`
+加 `riscv64` + `AC_DEFINE([ZIMG_RVV])` + `AM_CONDITIONAL([RVVSIMD])`；`Makefile.am` 的
+`if RVVSIMD` 里加源文件；`cpuinfo.h` 的 `CPUClass` 加 `RISCV_RVV`；`resize_impl.cpp` 加分派。
+
+A/B 口径：两侧同 `-march=rv64gcv`，唯一变量 `--disable-simd`——在 RISC-V 上它就等于
+"有没有 RVV 内核"，因为上游没有别的 RISC-V SIMD。
+
+真机 K3（bicubic，GRAY16）：
+
+| 场景 | C | RVV | 比值 |
+|---|---|---|---|
+| 内核级：纯垂直 1920×1080→1920×720 | 23.534–23.573 ms | **3.096–3.103 ms** | **7.57–7.62×** |
+| 水平对照 1920×1080→1280×1080 | 25.69–25.76 ms | 25.69–25.76 ms | 1.00×（未向量化） |
+| 整链 1920×1080→1280×720 | 40.96–41.45 ms | **20.35–20.40 ms** | **2.01–2.03×** |
+
+三种场景输出哈希分别恒为 `8ae2d305d97f41c5` / `fdbfc49578568fcf` / `3f41cccccde96e72`，
+C 与 RVV 逐字节一致（1.14 定点运算位精确）。整链 41.0 → 20.3 ms 与"只砍掉垂直那遍
+（省 20.4 ms）、水平 25.7 ms 原地不动"的算术完全对得上，归因闭合。
+
+**这是本次 G3 整链收益最高的一个包**（此前 x264 1.249×、libvpx 1.12×、libwebp 1.009×、
+opus 1.005×），原因是 resize 的垂直那遍本来就占了 zimg 一半的时间，且它的数据布局天然
+适合 RVV（列连续、系数每行一组）。
+
+**口径教训（必须记）**：第一版 `create()` 只要不是水平方向就直接建 RVV 实现，忽略了
+`cpu` 参数，于是 `ZIMG_CPU_NONE`（约定是"可移植 C 路径"）也在跑 RVV，真机上出现
+`on-none == on-auto == 20.3 ms` 而 `off ≈ 41 ms` 的怪现象——看上去像 2×，实际是"两份二进制
+都在跑 RVV，只是 off 那份根本没编进去"。修正后 CPU_NONE 回落 C，才是干净的三方对照。
+**A/B 里"关掉"的那一侧必须真的关掉，CPU 参数属于口径不是提示。**
+
+另两个坑：`vnclipu_wx_u16m1` 的源必须是 `vuint32m2_t`（传 `vint32m2_t` 在 GCC 13 报类型错，
+先 `vreinterpret_v_i32m2_u32m2`）；`m_pixel_max{ (1UL << depth) - 1 }` 在花括号初始化里触发
+`-Wnarrowing`（=error），要 `static_cast<uint32_t>`。
+
+剩余可做的：**水平 resize 的 RVV 版**（25.7 ms 是整链另一半，下一个最有价值的目标）、
+FLOAT 路径、`depth`/`colorspace` 模块、运行时 CPU 探测。
