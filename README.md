@@ -10,6 +10,11 @@
 - **单个工程的范式**：`baseline/`（上游只读参照）+ `src/`（移植工作副本）+ `test/`（A/B 与内核差分）
   + `benchmark/` + `cmake/` + `scripts/` + `docs/` + `skills/`。详见 `docs/03-rvv-playbook.md`。
 
+## 移植项目组
+
+中心仓库 + 22 个子仓库的组织形态、关联方式与全量索引见 [`docs/16-porting-group.md`](docs/16-porting-group.md)；
+GitHub 上的项目组入口是 [`open-risc-v/rvv`](https://github.com/open-risc-v/rvv)，`git clone --recursive` 即可取全。
+
 ## 三条工作线
 
 | 工作线 | 内容 | 落地位置 |
