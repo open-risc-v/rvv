@@ -15,7 +15,7 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKDIR = os.path.dirname(ROOT)          # 工程都建在主仓库的兄弟目录
-SKILL_DIR = ("<internal-workspace>/Default/"
+SKILL_DIR = ("~/Library/Application Support/DoubaoWork/Default/"
              ".doubaowork/agent_mode/workspace/.user_skills/rvv-port-project")
 
 WAVE_SCOPE = {

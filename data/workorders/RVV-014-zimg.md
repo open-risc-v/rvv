@@ -29,8 +29,8 @@
 3. `~/work/zimg-rvv/docs/plan.md` —— 要做什么、不做什么
 4. `~/work/rvv/docs/03-rvv-playbook.md` —— 四条路径 A/B/C/D 与尾部掩码纪律
 5. `~/work/rvv/docs/04-isa-mapping.md` —— SSE/NEON → RVV 映射表与七个必踩坑
-6. `<internal-workspace>/Default/.doubaowork/agent_mode/workspace/.user_skills/rvv-port-project/references/adapt-build-system.md` —— 上游 CMake/autotools/meson 三种接法
-7. `<internal-workspace>/Default/.doubaowork/agent_mode/workspace/.user_skills/rvv-port-project/references/gates.md` —— G0→G5 证据要求与"假通过"清单
+6. `<rvv-port-project skill>/references/adapt-build-system.md` —— 上游 CMake/autotools/meson 三种接法
+7. `<rvv-port-project skill>/references/gates.md` —— G0→G5 证据要求与"假通过"清单
 
 ## 3. 边界（越界即视为返工）
 
