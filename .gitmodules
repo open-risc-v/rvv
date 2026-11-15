@@ -1,66 +1,66 @@
 [submodule "projects/libjpeg-turbo-rvv"]
 	path = projects/libjpeg-turbo-rvv
-	url = ../libjpeg-turbo-rvv
+	url = https://github.com/open-risc-v/libjpeg-turbo-rvv.git
 [submodule "projects/pixman-rvv"]
 	path = projects/pixman-rvv
-	url = ../pixman-rvv
+	url = https://github.com/open-risc-v/pixman-rvv.git
 [submodule "projects/openssl-rvv"]
 	path = projects/openssl-rvv
-	url = ../openssl-rvv
+	url = https://github.com/open-risc-v/openssl-rvv.git
 [submodule "projects/libgcrypt-rvv"]
 	path = projects/libgcrypt-rvv
-	url = ../libgcrypt-rvv
+	url = https://github.com/open-risc-v/libgcrypt-rvv.git
 [submodule "projects/libpng-rvv"]
 	path = projects/libpng-rvv
-	url = ../libpng-rvv
+	url = https://github.com/open-risc-v/libpng-rvv.git
 [submodule "projects/zlib-ng-rvv"]
 	path = projects/zlib-ng-rvv
-	url = ../zlib-ng-rvv
+	url = https://github.com/open-risc-v/zlib-ng-rvv.git
 [submodule "projects/opus-rvv"]
 	path = projects/opus-rvv
-	url = ../opus-rvv
+	url = https://github.com/open-risc-v/opus-rvv.git
 [submodule "projects/libwebp-rvv"]
 	path = projects/libwebp-rvv
-	url = ../libwebp-rvv
+	url = https://github.com/open-risc-v/libwebp-rvv.git
 [submodule "projects/libvpx-rvv"]
 	path = projects/libvpx-rvv
-	url = ../libvpx-rvv
+	url = https://github.com/open-risc-v/libvpx-rvv.git
 [submodule "projects/openh264-rvv"]
 	path = projects/openh264-rvv
-	url = ../openh264-rvv
+	url = https://github.com/open-risc-v/openh264-rvv.git
 [submodule "projects/libaom-rvv"]
 	path = projects/libaom-rvv
-	url = ../libaom-rvv
+	url = https://github.com/open-risc-v/libaom-rvv.git
 [submodule "projects/webrtc-ap-rvv"]
 	path = projects/webrtc-ap-rvv
-	url = ../webrtc-ap-rvv
+	url = https://github.com/open-risc-v/webrtc-ap-rvv.git
 [submodule "projects/x264-rvv"]
 	path = projects/x264-rvv
-	url = ../x264-rvv
+	url = https://github.com/open-risc-v/x264-rvv.git
 [submodule "projects/zimg-rvv"]
 	path = projects/zimg-rvv
-	url = ../zimg-rvv
+	url = https://github.com/open-risc-v/zimg-rvv.git
 [submodule "projects/libde265-rvv"]
 	path = projects/libde265-rvv
-	url = ../libde265-rvv
+	url = https://github.com/open-risc-v/libde265-rvv.git
 [submodule "projects/botan-rvv"]
 	path = projects/botan-rvv
-	url = ../botan-rvv
+	url = https://github.com/open-risc-v/botan-rvv.git
 [submodule "projects/ceph-rvv"]
 	path = projects/ceph-rvv
-	url = ../ceph-rvv
+	url = https://github.com/open-risc-v/ceph-rvv.git
 [submodule "projects/eigen-rvv"]
 	path = projects/eigen-rvv
-	url = ../eigen-rvv
+	url = https://github.com/open-risc-v/eigen-rvv.git
 [submodule "projects/fftw-rvv"]
 	path = projects/fftw-rvv
-	url = ../fftw-rvv
+	url = https://github.com/open-risc-v/fftw-rvv.git
 [submodule "projects/gdal-rvv"]
 	path = projects/gdal-rvv
-	url = ../gdal-rvv
+	url = https://github.com/open-risc-v/gdal-rvv.git
 [submodule "projects/gromacs-rvv"]
 	path = projects/gromacs-rvv
-	url = ../gromacs-rvv
+	url = https://github.com/open-risc-v/gromacs-rvv.git
 [submodule "projects/cryptopp-rvv"]
 	path = projects/cryptopp-rvv
-	url = ../cryptopp-rvv
+	url = https://github.com/open-risc-v/cryptopp-rvv.git
