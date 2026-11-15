@@ -11,7 +11,7 @@ RVV-009,media-libs/libvpx,libvpx-rvv,W2,P0,G3,,2026-11-15,libvpx-rvv/docs/eviden
 RVV-010,media-libs/openh264,openh264-rvv,W2,P0,G3,,2026-11-15,openh264-rvv/docs/evidence/G3-kernel-sad-20261115.md: SAD 内核 16x16 2.91x/8x8 1.36x（4x4/4x8 负优化已保留 C）；编码器级真机 1.018x；qemu 码流/像素与 G2 基线一致,
 RVV-011,media-video/ffmpeg,ffmpeg-rvv,W5,P0,G0,,2026-11-13,docs/plan.md,
 RVV-012,media-libs/libaom,libaom-rvv,W2,P1,G3,,2026-11-14,libaom-rvv/docs/evidence/G3-kernel-20261114.md: ENABLE_RVV 开关两侧一致；真机性能待跑,
-RVV-013,media-libs/x264,x264-rvv,W3,P1,G2,,2026-11-13,x264-rvv/docs/evidence/G2-baseline-20261113.md: 10 帧 690 B，fnv_bit=91e876b2…（纯 C，--disable-asm）,
+RVV-013,media-libs/x264,x264-rvv,W3,P1,G3,,2026-11-15,x264-rvv/docs/evidence/G3-kernel-sad-20261115.md: 8bit SAD/SSD RVV 内核，SAD16x16 5.97x、SSD16x16 2.05x；整链 352x288 1.249x / 640x480 1.230x，码流逐字节一致,satd 未向量化（subme>=4 时比 SAD 更热）；4x16 与 10bit 未接；无运行时 CPU 探测（编译期 HAVE_RVV_KERNELS）
 RVV-014,media-libs/zimg,zimg-rvv,W3,P1,G2,,2026-11-13,zimg-rvv/docs/evidence/G2-baseline-20261113.md: resize fnv=63a1b96d… depth fnv=1ca7dee4…，native≡riscv64,
 RVV-015,media-libs/libde265,libde265-rvv,W3,P1,G3,,2026-11-15,libde265-rvv/docs/evidence/G3-kernel-idct8-20261115.md: 8x8 IDCT RVV 内核 1.46x（889→608ns）；整链 806.9→803.5k us = 1.004x（6/6 轮同向）；16x16 实测退步(0.975x/门控0.997x)不接线,整链收益仅 +0.4%（8x8 IDCT 占比小）；16x16/32x32 受 lastCol 稀疏截断限制，需上层传 nnz；下一步 deblocking/qpel
 RVV-016,media-libs/x265,x265-rvv,W4,P2,G0,,2026-11-13,docs/plan.md,
