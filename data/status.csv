@@ -1,6 +1,6 @@
 id,pkg,project,wave,priority,gate,owner,updated,evidence,blocker
 RVV-001,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,W1,P0,G3,,2026-11-14,libjpeg-turbo-rvv/docs/evidence/G3-kernel-20261114.md: RVV 后端与纯 C 码流/像素逐字节一致；真机性能待跑,
-RVV-002,x11-libs/pixman,pixman-rvv,W1,P0,G2,,2026-11-13,pixman-rvv/docs/evidence/G2-20261113.md: fill+OVER+渐变，run_ab 2/2 PASS | CROSS-baseline-20261113.md: riscv64(rv64gc) PPM 哈希与 native 一致,
+RVV-002,x11-libs/pixman,pixman-rvv,W1,P0,G3,,2026-11-15,pixman-rvv/docs/evidence/G3-kernel-20261114.md: 上游自带 RVV，功能逐字节一致；真机 OVER 1024x1024 706.2 vs 225.1 mpx/s = 3.14x,
 RVV-003,media-libs/libpng,libpng-rvv,W1,P0,G3,,2026-11-14,libpng-rvv/docs/evidence/G3-kernel-20261114.md: 接线后 RVV vs 纯 C 一致，变异测试已证路径生效,
 RVV-004,sys-libs/zlib-ng,zlib-ng-rvv,W1,P0,G3,,2026-11-14,zlib-ng-rvv/docs/evidence/G3-kernel-20261114.md: WITH_RVV 开关两侧逐字节一致；真机性能待跑,
 RVV-005,dev-libs/openssl,openssl-rvv,W1,P0,G2,,2026-11-13,openssl-rvv/docs/evidence/G2-20261113.md: AES-128-CBC+SHA-256，run_ab 2/2 PASS | CROSS-baseline-20261113.md: linux64-riscv64 密文与 sha256 与 native 一致,
@@ -8,7 +8,7 @@ RVV-006,dev-libs/libgcrypt,libgcrypt-rvv,W1,P1,G3,,2026-11-14,libgcrypt-rvv/docs
 RVV-007,media-libs/opencv,opencv-rvv,W6,P0,G0,,2026-11-13,docs/plan.md,
 RVV-008,media-libs/libwebp,libwebp-rvv,W2,P0,G2,,2026-11-13,libwebp-rvv/docs/evidence/CROSS-baseline-20261113.md: 无损+有损 133x101，riscv64 与 native 全字段一致（lossless=30026 px_diff=0）,
 RVV-009,media-libs/libvpx,libvpx-rvv,W2,P0,G3,,2026-11-15,libvpx-rvv/docs/evidence/G3-kernel-sad-20261115.md: SAD 内核 16x16 1.32x/32x32 2.57x/64x64 2.12x、8x8 0.73x；未接 rtcd,
-RVV-010,media-libs/openh264,openh264-rvv,W2,P0,G2,,2026-11-13,openh264-rvv/docs/evidence/CROSS-baseline-20261113.md: USE_ASM=No，10 帧逐 NAL 解码，riscv64 与 native 全字段一致,
+RVV-010,media-libs/openh264,openh264-rvv,W2,P0,G3,,2026-11-15,openh264-rvv/docs/evidence/G3-kernel-sad-20261115.md: SAD 内核 16x16 2.91x/8x8 1.36x（4x4/4x8 负优化已保留 C）；编码器级真机 1.018x；qemu 码流/像素与 G2 基线一致,
 RVV-011,media-video/ffmpeg,ffmpeg-rvv,W5,P0,G0,,2026-11-13,docs/plan.md,
 RVV-012,media-libs/libaom,libaom-rvv,W2,P1,G3,,2026-11-14,libaom-rvv/docs/evidence/G3-kernel-20261114.md: ENABLE_RVV 开关两侧一致；真机性能待跑,
 RVV-013,media-libs/x264,x264-rvv,W3,P1,G2,,2026-11-13,x264-rvv/docs/evidence/G2-baseline-20261113.md: 10 帧 690 B，fnv_bit=91e876b2…（纯 C，--disable-asm）,

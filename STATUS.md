@@ -1,13 +1,13 @@
 # 移植工程看板
 
-> 由 `scripts/dashboard.py` 生成于 2026-11-14；数据源 `data/status.csv` + `data/plan.csv`。改数据，不要改这里。
+> 由 `scripts/dashboard.py` 生成于 2026-11-15；数据源 `data/status.csv` + `data/plan.csv`。改数据，不要改这里。
 
 ## 1. 总览
 
 | 指标 | 值 |
 |---|---|
 | 在册项目 | 48 |
-| 门禁分布 | G0 26 / G1 2 / G2 18 / G3 2 / G4 0 / G5 0 |
+| 门禁分布 | G0 26 / G1 2 / G2 12 / G3 8 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
 | 阻塞项 | 0 |
 | 超 14 天未更新 | 0 |
@@ -28,17 +28,17 @@
 | 编号 | 包 | 工程 | 优先级 | 波次 | 门禁 | 负责人 | 更新 | 阻塞 |
 |---|---|---|---|---|---|---|---|---|
 | RVV-001 | `media-libs/libjpeg-turbo` | `libjpeg-turbo-rvv` | P0 | W1 | G3 | - | 2026-11-14 | - |
-| RVV-002 | `x11-libs/pixman` | `pixman-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
-| RVV-003 | `media-libs/libpng` | `libpng-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
+| RVV-002 | `x11-libs/pixman` | `pixman-rvv` | P0 | W1 | G3 | - | 2026-11-15 | - |
+| RVV-003 | `media-libs/libpng` | `libpng-rvv` | P0 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-004 | `sys-libs/zlib-ng` | `zlib-ng-rvv` | P0 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G2 | - | 2026-11-13 | - |
-| RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G2 | - | 2026-11-13 | - |
+| RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
-| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
-| RVV-010 | `media-libs/openh264` | `openh264-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
+| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G3 | - | 2026-11-15 | - |
+| RVV-010 | `media-libs/openh264` | `openh264-rvv` | P0 | W2 | G3 | - | 2026-11-15 | - |
 | RVV-017 | `media-libs/opus` | `opus-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
 | RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
-| RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | G2 | - | 2026-11-13 | - |
+| RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | G3 | - | 2026-11-14 | - |
 | RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
 | RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
