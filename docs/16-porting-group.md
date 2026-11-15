@@ -8,6 +8,28 @@
 - 子项目：22 个，全部以 **git submodule** 挂在 `projects/` 下，`.gitmodules` 使用 GitHub 绝对地址，
   因此 `git clone --recursive` 即可拿到完整项目组。
 
+## 仓库状态（2026-11-16）
+
+24 个仓库**全部 public**，中心仓库与 22 个子仓库的远端提交与本地一致，`git clone --recursive`
+已从空目录实测通过（22 个子模块指针均可检出）。
+
+| 仓库 | 说明 |
+|---|---|
+| [`rvv`](https://github.com/open-risc-v/rvv) | 中心仓库（计划、门禁、状态、报告） |
+| 22 个 `*-rvv` | 挂在 `projects/` 下的子工程，见下方全量表 |
+| [`libspeex-rvv`](https://github.com/open-risc-v/libspeex-rvv) | 模板来源工程，单独公开但不作为 submodule（不属 48 项计划） |
+
+复现：
+
+```bash
+git clone --recursive https://github.com/open-risc-v/rvv.git
+cd rvv && git submodule status     # 22 行，指针即验收版本
+```
+
+提交前已做脱敏：真机地址与口令替换为 `<BOARD_HOST>` / `<BOARD_PASS>`，本地绝对路径
+替换为 `~/work/`，内部工作区路径替换为 `<internal-workspace>`；10 个仓库重写历史后再推。
+openssl 仓库内 `test/*.pem` 的测试私钥与上游逐字节一致（官方自带样例），未做改动。
+
 ## 关联关系
 
 ```
