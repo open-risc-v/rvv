@@ -47,7 +47,7 @@ rvv（计划/门禁/汇总）
 | RVV-006 | `dev-libs/libgcrypt` | [libgcrypt-rvv](https://github.com/open-risc-v/libgcrypt-rvv) | W1 | P1 | D4 | **G3** | libgcrypt-rvv/docs/evidence/G3-kernel-20261114.md |
 | RVV-001 | `media-libs/libjpeg-turbo` | [libjpeg-turbo-rvv](https://github.com/open-risc-v/libjpeg-turbo-rvv) | W1 | P0 | D3 | **G3** | libjpeg-turbo-rvv/docs/evidence/G3-kernel-20261114.md |
 | RVV-003 | `media-libs/libpng` | [libpng-rvv](https://github.com/open-risc-v/libpng-rvv) | W1 | P0 | D2 | **G3** | libpng-rvv/docs/evidence/G3-kernel-20261114.md |
-| RVV-009 | `media-libs/libvpx` | [libvpx-rvv](https://github.com/open-risc-v/libvpx-rvv) | W2 | P0 | D5 | **G3** | libvpx-rvv/docs/evidence/G3-kernel-sad-20261115.md |
+| RVV-009 | `media-libs/libvpx` | [libvpx-rvv](https://github.com/open-risc-v/libvpx-rvv) | W2 | P0 | D5 | **G3** | libvpx-rvv/docs/evidence/G3-kernel-sad-20261115.md + G3-kernel-sse-20261116.md |
 | RVV-008 | `media-libs/libwebp` | [libwebp-rvv](https://github.com/open-risc-v/libwebp-rvv) | W2 | P0 | D3 | **G3** | libwebp-rvv/docs/evidence/G3-kernel-sse-20261115.md |
 | RVV-010 | `media-libs/openh264` | [openh264-rvv](https://github.com/open-risc-v/openh264-rvv) | W2 | P0 | D4 | **G3** | openh264-rvv/docs/evidence/G3-kernel-sad-20261115.md |
 | RVV-005 | `dev-libs/openssl` | [openssl-rvv](https://github.com/open-risc-v/openssl-rvv) | W1 | P0 | D4 | **G2** | openssl-rvv/docs/evidence/G2-20261113.md |
