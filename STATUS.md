@@ -31,7 +31,7 @@
 | RVV-002 | `x11-libs/pixman` | `pixman-rvv` | P0 | W1 | G3 | - | 2026-11-15 | - |
 | RVV-003 | `media-libs/libpng` | `libpng-rvv` | P0 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-004 | `sys-libs/zlib-ng` | `zlib-ng-rvv` | P0 | W1 | G3 | - | 2026-11-16 | - |
-| RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G3 | - | 2026-11-16 | OPENSSL_riscvcap 无法单扩展隔离；GCM/SHA-512 同类 A/B 未做 |
+| RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G3 | - | 2026-11-16 | OPENSSL_riscvcap 无法单扩展隔离（GCM 归因靠 nm 符号）；解密方向未单列、RSA/ECC 未测 |
 | RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G3 | - | 2026-11-15 | 只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做 |
 | RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G3 | - | 2026-11-16 | rtcd 运行时分发未做；variance/fdct/量化未接，整链上限受限于接入面 |
@@ -78,7 +78,7 @@
 
 ## 4. 阻塞项
 
-- `dev-libs/openssl`（G3）：OPENSSL_riscvcap 无法单扩展隔离；GCM/SHA-512 同类 A/B 未做
+- `dev-libs/openssl`（G3）：OPENSSL_riscvcap 无法单扩展隔离（GCM 归因靠 nm 符号）；解密方向未单列、RSA/ECC 未测
 - `media-libs/libwebp`（G3）：只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做
 - `media-libs/libvpx`（G3）：rtcd 运行时分发未做；variance/fdct/量化未接，整链上限受限于接入面
 - `media-libs/x264`（G3）：satd 未向量化（subme>=4 时比 SAD 更热）；4x16 与 10bit 未接；无运行时 CPU 探测（编译期 HAVE_RVV_KERNELS）

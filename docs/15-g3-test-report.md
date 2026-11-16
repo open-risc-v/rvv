@@ -60,6 +60,8 @@ A/B 口径（全部包统一）：
 | crypto++ | AES-256-CTR 64 KiB | **0.302 ms**（三轮全 0.302） | 0.951 ms（0.951/0.951/0.976） | **3.15×** |
 | crypto++ | AES-256-CBC 64 KiB | **0.313 ms** | 0.982 ms | **3.14×** |
 | crypto++ | AES-128-CTR 64 KiB | **0.226 ms** | 0.734 ms | **3.25×** |
+| openssl | AES-256-GCM 64 KiB | **0.035 ms** | 9.905 ms | **≈287×** |
+| openssl | SHA-512 64 KiB | **0.099 ms** | 0.368 ms | **≈3.7×** |
 
 ### 3.1 三个必须说清的口径问题
 
@@ -531,8 +533,17 @@ crypto/sha/asm/sha256-riscv64-zvkb-zvknha_or_zvknhb.pl / sha512-...zvknhb.pl / *
 | AES-128-CBC dec | 7.43 ms | **0.052 ms** | **≈143×** |
 | AES-128-CTR | 7.10–7.12 ms | **0.025 ms** | **≈284×** |
 | SHA-256 | 0.662–0.665 ms | **0.078 ms** | **8.5×** |
+| **AES-256-GCM**（AAD 16B+IV 12B，续测） | 9.905–10.064 ms | **0.035 ms** | **≈287×** |
+| **SHA-512**（续测） | 0.368–0.369 ms | **0.099 ms** | **≈3.7×** |
 
-产物逐字节一致（`fnv_ct=cc18494f5e673a69`、`fnv_ctr=5c61394dab555006`、`sha256=b5c66c4d…`）。
+产物逐字节一致（`fnv_ct=cc18494f5e673a69`、`fnv_ctr=5c61394dab555006`、`sha256=b5c66c4d…`、
+`fnv_gcm=277da5ef19ec13c4`、`tag=be1f5baad4e36232b20cd367555be2bf`、`sha512=b9e2c354…`）。
+
+**GCM 的 287× 是两条 Zvk 扩展叠加**：`nm` 查到 `gcm_ghash_rv64i_zvkg` / `gcm_gmult_rv64i_zvkg`
+（GHASH 走 Zvkg 的 `vgmul`）与 `libcrypto-lib-aes-gcm-riscv64-zvkb-zvkg-zvkned.o`
+（AES 轮走 Zvkned），而 off 侧 GHASH 是逐块 128-bit 多项式乘法的纯 C。SHA-512 走
+`sha512_block_data_order_zvkb_zvknhb`，3.7× 低于 SHA-256 的 8.5×——64 位机上的标量
+SHA-512 本来就接近理论吞吐，向量化的相对空间更小。
 
 归因三重证据：①`libcrypto.a` 里 43 个 zvk 符号、含 `aes-gcm-...zvkned.o`；②qemu（无 Zvkned、
 有 Zbb）里 SHA-256 快 1.74× 而 CBC/CTR 不变 → Zvkned 只在真机执行；③同机 libgcrypt 的
