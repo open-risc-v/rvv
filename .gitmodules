@@ -79,3 +79,6 @@
 [submodule "projects/stockfish-rvv"]
 	path = projects/stockfish-rvv
 	url = ../stockfish-rvv
+[submodule "projects/libspeex-rvv"]
+	path = projects/libspeex-rvv
+	url = https://github.com/open-risc-v/libspeex-rvv.git
