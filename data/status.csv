@@ -25,7 +25,7 @@ RVV-023,media-sound/pulseaudio,pulseaudio-rvv,W5,P2,G0,,2026-11-13,docs/plan.md,
 RVV-024,media-libs/speex,libspeex-rvv,W6,P3,G0,,2026-11-13,docs/plan.md,
 RVV-025,dev-libs/nettle,nettle-rvv,W4,P1,G0,,2026-11-13,docs/plan.md,
 RVV-026,dev-libs/botan,botan-rvv,W3,P1,G2,,2026-11-13,botan-rvv/docs/evidence/G2-baseline-20261113.md: sha256 fnv=ab0624b9… aesctr fnv=6b642726…，native≡riscv64,
-RVV-027,dev-libs/crypto++,cryptopp-rvv,W3,P1,G2,,2026-11-13,cryptopp-rvv/docs/evidence/G2-baseline-20261113.md: sha256 fnv=ab0624b9… aesctr fnv=6b642726…，native≡riscv64,
+RVV-027,dev-libs/crypto++,cryptopp-rvv,W3,P1,G3,,2026-11-16,cryptopp-rvv/docs/evidence/G3-kernel-aes-ctr-20261116.md: AES-256-CTR 接管 AdvancedProcessBlocks+15 轮密钥常驻，真机 64KiB 0.951-0.976→0.302ms = 3.15x；哈希≡G2 基线 BYTES_SAME,仅接管 AES-256 纯 CTR；AES-128/192 与 CBC 仍走逐块路径
 RVV-028,sys-cluster/ceph,ceph-rvv,W3,P1,G1,,2026-11-13,骨架就位；源码未拉（体量大，需专用镜像与依赖）,
 RVV-029,net-libs/mbedtls,mbedtls-rvv,W4,P2,G0,,2026-11-13,docs/plan.md,
 RVV-030,dev-libs/rocksdb,rocksdb-rvv,W5,P2,G0,,2026-11-13,docs/plan.md,

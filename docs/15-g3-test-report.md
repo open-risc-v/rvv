@@ -57,6 +57,7 @@ A/B 口径（全部包统一）：
 | libgcrypt | AES-256-CTR 16 MiB | 2005.7 MBps | 50.9 MBps | **39.4×** |
 | libpng | 解码 1024×768 | 3.69 ms | 3.81 ms | **1.03×** |
 | libaom | — | 无 bench（5 帧 harness 太短） | — | — |
+| crypto++ | AES-256-CTR 64 KiB | **0.302 ms**（三轮全 0.302） | 0.951 ms（0.951/0.951/0.976） | **3.15×** |
 
 ### 3.1 三个必须说清的口径问题
 
@@ -582,3 +583,50 @@ max_rel=2.346e-13`，三轮全 `BYTES_SAME`。
 `70008b1ef18c9fc1`（与 off 不一致），搬到真机却完全相同。**qemu 对 RVV10 的多寄存器整数
 kernel 模拟有缺陷**，它连功能都不能采信，只能当冒烟测试——配合 §4.9 的"qemu gather 慢 7.5 倍"，
 可以定论：**qemu 只回答"能不能启动与跑到结束"，功能与性能都必须真机。**
+
+### 4.15 crypto++ AES-256-CTR：Zvkned + 接管多块派发（3.15×）
+
+**为什么值得做**：crypto++ 的 `Rijndael::Enc` 在 riscv 上没有 SIMD 分支，走的是
+T-table 标量 C；而 K3 自带 `zvkned`，一条 `vaesem` 就能完成一整轮
+（SubBytes+ShiftRows+MixColumns），一条 `vaesef` 完成末轮。
+
+**指令面实测**（Bianbu binutils 2.46，`as`）：
+
+| 助记符 | 可编 | 备注 |
+|---|---|---|
+| `vaesem.vv vd, vs2` | 是 | 中间轮 |
+| `vaesef.vv vd, vs2` | 是 | 末轮（无 MixColumns） |
+| `vaesefs.vv` / `vaesel.vv` / 3 操作数 / `.vs` | 否 | 全 FAIL |
+
+`riscv_crypto.h`（gcc 15，309 行）无 vaes intrinsic，只能内联汇编。
+
+**语义不猜，用零基准单轮对拍**：`in[i]=i*17+3`、`key[i]=i+1`，
+`vaesem` 输出 `ab7eba9883fc2f86ae75dc3a40d57fd1`、`vaesef` 输出
+`7a689673a5d8a60d34eb34d687f4f6be`，与 Python 独立实现的
+SubBytes+ShiftRows(+MixColumns)+AddKey 逐字节一致 ⇒ **状态在 vd（兼目标），轮密钥在 vs2**。
+
+**最难的一坑**：`UncheckedSetKey` 只对**首轮与末轮**做
+`ConditionalByteReverse(BIG_ENDIAN_ORDER, ...)`，中间轮保持大端 word。于是
+`k[0]`、`k[R]` 直接 `vle32`，`k[1..R-1]` 才要 `vrev8`。对全体都做 `vrev8`
+的表现是"性能已 3× 但哈希不符、且输出不落在任何中间轮上"。
+
+**两个阶段的收益对比**：
+
+| 阶段 | 做法 | 64 KiB CTR |
+|---|---|---|
+| 只在 `ProcessAndXorBlock` 加速 | 每块一次虚调用 + 14 次密钥装载 | 0.951 ms，**1.026×** |
+| 接管 `Enc::AdvancedProcessBlocks` | 15 个轮密钥常驻寄存器，只接管 `BT_InBlockIsCounter` | **0.302 ms，3.15×** |
+
+默认多块实现（`src/cryptlib.cpp:141`）是逐块虚调用 + 每块 `inBlocks[15]++`，
+单块做的 14 条 `vaesem` 被派发开销吃干净——这与 §4.6/§4.11 的结论同构：
+**内核再快，派发层的粒度决定上限**。
+
+**功能**：三轮 A/B 哈希 `aesctr fnv=6b642726bef75efc`、`sha256 fnv=ab0624b961d45259`
+两侧全同，`cmp` 得 `BYTES_SAME`；SHA-256 两侧 0.776–0.821 ms 无变化，反证 A/B 只有一个变量。
+
+**边界**：只接管 `m_rounds == 14` 且 flags 恰为 `BT_InBlockIsCounter` 的纯 CTR；
+AES-128/192、CBC/XTS/`BT_XorInput` 一律回落基类 T-table 路径，不改变任何语义。
+
+**验证的中间产物**（都在板上）：`vt.c`（纯 asm 单轮语义对拍）、`vt2.c`（intrinsic+vrev8 单轮）、
+`vt3.c`（用 60 个 round-key 常量做 14 轮，输出 `8c5b77dfa6593649d2620ad83c244a88` 与 off 一致）、
+`k1.cpp`（单块 + 3 块 CTR 小样本）。
