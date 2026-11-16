@@ -45,5 +45,5 @@ RVV-043,dev-lang/rust,rust-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,
 RVV-044,dev-lang/go,go-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,
 RVV-045,media-video/vlc,vlc-rvv,W6,P3,G0,,2026-11-13,docs/plan.md,
 RVV-046,media-libs/libsdl2,SDL2-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,
-RVV-047,games-board/stockfish,stockfish-rvv,W5,P3,G1,,2026-11-16,G1 骨架+交叉编译+A/B ALL PASS（容器 rvv-cross:2 内 riscv64 交叉编、qemu 仅作功能验证）；内核差分 2/2 共 102 次比较；上游真实构建与真实包用例尚未接入,上游构建未接入(upstream.cmake 为空)；真实包用例未写
+RVV-047,games-board/stockfish,stockfish-rvv,W5,P3,G3,,2026-11-16,上游自带 USE_RVV；真机 g++15.2 编两侧 march 同为 rv64gcv、唯一变量 -DUSE_RVV；NNUE bench 1 1 14：off 300347ms/2531901 nodes/8429nps，on 19387ms/2531901 nodes/130597nps = 15.5x，节点数逐位相同,未做多线程与 riscv64-universal 运行时分发
 RVV-048,app-crypt/johntheripper,john-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,

@@ -7,9 +7,9 @@
 | 指标 | 值 |
 |---|---|
 | 在册项目 | 48 |
-| 门禁分布 | G0 1 / G1 0 / G2 0 / G3 7 / G4 0 / G5 0 |
+| 门禁分布 | G0 21 / G1 6 / G2 4 / G3 17 / G4 0 / G5 0 |
 | 达 G4 及以上 | 0 / 48（0%） |
-| 阻塞项 | 2 |
+| 阻塞项 | 14 |
 | 超 14 天未更新 | 0 |
 
 ## 2. 按波次
@@ -34,54 +34,62 @@
 | RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G3 | - | 2026-11-16 | OPENSSL_riscvcap 无法单扩展隔离（GCM 归因靠 nm 符号）；解密方向未单列、RSA/ECC 未测 |
 | RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G3 | - | 2026-11-15 | 只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做 |
-| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | ? | - |  | - |
-| RVV-010 | `media-libs/openh264` | `openh264-rvv` | P0 | W2 | ? | - |  | - |
-| RVV-017 | `media-libs/opus` | `opus-rvv` | P0 | W2 | ? | - |  | - |
-| RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | P0 | W2 | ? | - |  | - |
-| RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | ? | - |  | - |
-| RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-026 | `dev-libs/botan` | `botan-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-028 | `sys-cluster/ceph` | `ceph-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-032 | `dev-cpp/eigen` | `eigen-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-033 | `sci-libs/fftw` | `fftw-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-034 | `sci-libs/gdal` | `gdal-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-035 | `sci-chemistry/gromacs` | `gromacs-rvv` | P1 | W3 | ? | - |  | - |
-| RVV-019 | `media-libs/speexdsp` | `speexdsp-rvv` | P1 | W4 | ? | - |  | - |
-| RVV-020 | `media-libs/flac` | `flac-rvv` | P1 | W4 | ? | - |  | - |
-| RVV-025 | `dev-libs/nettle` | `nettle-rvv` | P1 | W4 | ? | - |  | - |
-| RVV-016 | `media-libs/x265` | `x265-rvv` | P2 | W4 | ? | - |  | - |
-| RVV-029 | `net-libs/mbedtls` | `mbedtls-rvv` | P2 | W4 | ? | - |  | - |
-| RVV-031 | `dev-libs/hyperscan` | `hyperscan-rvv` | P2 | W4 | ? | - |  | - |
-| RVV-036 | `sci-libs/tensorflow` | `tensorflow-rvv` | P2 | W4 | ? | - |  | - |
-| RVV-011 | `media-video/ffmpeg` | `ffmpeg-rvv` | P0 | W5 | ? | - |  | - |
-| RVV-021 | `media-libs/openal` | `openal-soft-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-022 | `media-sound/mpg123` | `mpg123-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-023 | `media-sound/pulseaudio` | `pulseaudio-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-030 | `dev-libs/rocksdb` | `rocksdb-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-037 | `media-libs/embree` | `embree-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-038 | `sci-libs/pcl` | `pcl-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-039 | `sci-libs/dlib` | `dlib-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-041 | `net-libs/nodejs` | `node-rvv` | P2 | W5 | ? | - |  | - |
-| RVV-043 | `dev-lang/rust` | `rust-rvv` | P3 | W5 | ? | - |  | - |
-| RVV-044 | `dev-lang/go` | `go-rvv` | P3 | W5 | ? | - |  | - |
-| RVV-046 | `media-libs/libsdl2` | `SDL2-rvv` | P3 | W5 | ? | - |  | - |
-| RVV-047 | `games-board/stockfish` | `stockfish-rvv` | P3 | W5 | ? | - |  | - |
-| RVV-048 | `app-crypt/johntheripper` | `john-rvv` | P3 | W5 | ? | - |  | - |
+| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G3 | - | 2026-11-16 | fdct/fht/quantize 未接；sub_pixel 前置双线性滤波仍 C；rtcd 运行时分发未做 |
+| RVV-010 | `media-libs/openh264` | `openh264-rvv` | P0 | W2 | G3 | - | 2026-11-15 | - |
+| RVV-017 | `media-libs/opus` | `opus-rvv` | P0 | W2 | G3 | - | 2026-11-15 | 整链收益 1.005x —— pitch xcorr 只占编码 ~1.7%；真正的热点 MDCT/FFT 与 comb_filter 未做；xcorr_kernel(ord 16-24) 不做 |
+| RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
+| RVV-012 | `media-libs/libaom` | `libaom-rvv` | P1 | W2 | G3 | - | 2026-11-14 | - |
+| RVV-013 | `media-libs/x264` | `x264-rvv` | P1 | W3 | G3 | - | 2026-11-15 | satd 未向量化（subme>=4 时比 SAD 更热）；4x16 与 10bit 未接；无运行时 CPU 探测（编译期 HAVE_RVV_KERNELS） |
+| RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | G3 | - | 2026-11-16 | FLOAT 路径、depth/colorspace 模块、运行时 CPU 探测未做 |
+| RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G3 | - | 2026-11-15 | 整链收益仅 +0.4%（8x8 IDCT 占比小）；16x16/32x32 受 lastCol 稀疏截断限制，需上层传 nnz；下一步 deblocking/qpel |
+| RVV-026 | `dev-libs/botan` | `botan-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
+| RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | P1 | W3 | G3 | - | 2026-11-16 | 加密方向 only；解密/CBC 解密与 GCM 未做；受控实验证明收益来自轮函数不是派发粒度 |
+| RVV-028 | `sys-cluster/ceph` | `ceph-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
+| RVV-032 | `dev-cpp/eigen` | `eigen-rvv` | P1 | W3 | G3 | - | 2026-11-16 | qemu 对 RVV10 整数 kernel 模拟有缺陷，功能判定只在真机 |
+| RVV-033 | `sci-libs/fftw` | `fftw-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
+| RVV-034 | `sci-libs/gdal` | `gdal-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
+| RVV-035 | `sci-chemistry/gromacs` | `gromacs-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
+| RVV-019 | `media-libs/speexdsp` | `speexdsp-rvv` | P1 | W4 | G1 | - | 2026-11-16 | 上游构建未接入(upstream.cmake 为空)；真实包用例未写 |
+| RVV-020 | `media-libs/flac` | `flac-rvv` | P1 | W4 | G1 | - | 2026-11-16 | 上游构建未接入(upstream.cmake 为空)；真实包用例未写 |
+| RVV-025 | `dev-libs/nettle` | `nettle-rvv` | P1 | W4 | G1 | - | 2026-11-16 | 上游构建未接入(upstream.cmake 为空)；真实包用例未写 |
+| RVV-016 | `media-libs/x265` | `x265-rvv` | P2 | W4 | G0 | - | 2026-11-13 | - |
+| RVV-029 | `net-libs/mbedtls` | `mbedtls-rvv` | P2 | W4 | G0 | - | 2026-11-13 | - |
+| RVV-031 | `dev-libs/hyperscan` | `hyperscan-rvv` | P2 | W4 | G0 | - | 2026-11-13 | - |
+| RVV-036 | `sci-libs/tensorflow` | `tensorflow-rvv` | P2 | W4 | G0 | - | 2026-11-13 | - |
+| RVV-011 | `media-video/ffmpeg` | `ffmpeg-rvv` | P0 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-021 | `media-libs/openal` | `openal-soft-rvv` | P2 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-022 | `media-sound/mpg123` | `mpg123-rvv` | P2 | W5 | G1 | - | 2026-11-16 | 上游构建未接入(upstream.cmake 为空)；真实包用例未写 |
+| RVV-023 | `media-sound/pulseaudio` | `pulseaudio-rvv` | P2 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-030 | `dev-libs/rocksdb` | `rocksdb-rvv` | P2 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-037 | `media-libs/embree` | `embree-rvv` | P2 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-038 | `sci-libs/pcl` | `pcl-rvv` | P2 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-039 | `sci-libs/dlib` | `dlib-rvv` | P2 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-041 | `net-libs/nodejs` | `node-rvv` | P2 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-043 | `dev-lang/rust` | `rust-rvv` | P3 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-044 | `dev-lang/go` | `go-rvv` | P3 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-046 | `media-libs/libsdl2` | `SDL2-rvv` | P3 | W5 | G0 | - | 2026-11-13 | - |
+| RVV-047 | `games-board/stockfish` | `stockfish-rvv` | P3 | W5 | G3 | - | 2026-11-16 | 未做多线程与 riscv64-universal 运行时分发 |
+| RVV-048 | `app-crypt/johntheripper` | `john-rvv` | P3 | W5 | G0 | - | 2026-11-13 | - |
 | RVV-007 | `media-libs/opencv` | `opencv-rvv` | P0 | W6 | G0 | - | 2026-11-13 | - |
-| RVV-040 | `www-client/chromium` | `chromium-rvv` | P0 | W6 | ? | - |  | - |
-| RVV-042 | `media-tv/kodi` | `kodi-rvv` | P2 | W6 | ? | - |  | - |
-| RVV-024 | `media-libs/speex` | `libspeex-rvv` | P3 | W6 | ? | - |  | - |
-| RVV-045 | `media-video/vlc` | `vlc-rvv` | P3 | W6 | ? | - |  | - |
+| RVV-040 | `www-client/chromium` | `chromium-rvv` | P0 | W6 | G0 | - | 2026-11-13 | - |
+| RVV-042 | `media-tv/kodi` | `kodi-rvv` | P2 | W6 | G0 | - | 2026-11-13 | - |
+| RVV-024 | `media-libs/speex` | `libspeex-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
+| RVV-045 | `media-video/vlc` | `vlc-rvv` | P3 | W6 | G0 | - | 2026-11-13 | - |
 
 ## 4. 阻塞项
 
 - `dev-libs/openssl`（G3）：OPENSSL_riscvcap 无法单扩展隔离（GCM 归因靠 nm 符号）；解密方向未单列、RSA/ECC 未测
 - `media-libs/libwebp`（G3）：只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做
-
-## 6. 缺少状态行（数据问题）
-
-- RVV-009, RVV-010, RVV-011, RVV-012, RVV-013, RVV-014, RVV-015, RVV-016, RVV-017, RVV-018, RVV-019, RVV-020, RVV-021, RVV-022, RVV-023, RVV-024, RVV-025, RVV-026, RVV-027, RVV-028, RVV-029, RVV-030, RVV-031, RVV-032, RVV-033, RVV-034, RVV-035, RVV-036, RVV-037, RVV-038, RVV-039, RVV-040, RVV-041, RVV-042, RVV-043, RVV-044, RVV-045, RVV-046, RVV-047, RVV-048
+- `media-libs/libvpx`（G3）：fdct/fht/quantize 未接；sub_pixel 前置双线性滤波仍 C；rtcd 运行时分发未做
+- `media-libs/x264`（G3）：satd 未向量化（subme>=4 时比 SAD 更热）；4x16 与 10bit 未接；无运行时 CPU 探测（编译期 HAVE_RVV_KERNELS）
+- `media-libs/zimg`（G3）：FLOAT 路径、depth/colorspace 模块、运行时 CPU 探测未做
+- `media-libs/libde265`（G3）：整链收益仅 +0.4%（8x8 IDCT 占比小）；16x16/32x32 受 lastCol 稀疏截断限制，需上层传 nnz；下一步 deblocking/qpel
+- `media-libs/opus`（G3）：整链收益 1.005x —— pitch xcorr 只占编码 ~1.7%；真正的热点 MDCT/FFT 与 comb_filter 未做；xcorr_kernel(ord 16-24) 不做
+- `media-libs/speexdsp`（G1）：上游构建未接入(upstream.cmake 为空)；真实包用例未写
+- `media-libs/flac`（G1）：上游构建未接入(upstream.cmake 为空)；真实包用例未写
+- `media-sound/mpg123`（G1）：上游构建未接入(upstream.cmake 为空)；真实包用例未写
+- `dev-libs/nettle`（G1）：上游构建未接入(upstream.cmake 为空)；真实包用例未写
+- `dev-libs/crypto++`（G3）：加密方向 only；解密/CBC 解密与 GCM 未做；受控实验证明收益来自轮函数不是派发粒度
+- `dev-cpp/eigen`（G3）：qemu 对 RVV10 整数 kernel 模拟有缺陷，功能判定只在真机
+- `games-board/stockfish`（G3）：未做多线程与 riscv64-universal 运行时分发
 
