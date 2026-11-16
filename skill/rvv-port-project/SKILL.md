@@ -17,16 +17,18 @@ description: 为 RISC-V RVV 移植计划新建一个「包名-rvv」工程骨架
 
 ## 生成
 
+**工程一律生成在主仓库的 `projects/` 下，且之后就在那里开发，不要在仓库外另建目录。**
+
 ```bash
-# 常规：落到 <dir>/<repo>，--dir 传父目录
+# 主仓库里已有封装脚本：默认落到 <主仓库>/projects/<repo>，推荐用这条
+<主仓库>/scripts/new-project.sh media-libs/libvpx
+
+# 直接用生成器时，--dir 传「父目录」，所以要显式指向 projects/
 python3 <此 Skill 目录>/scripts/new_project.py media-libs/libvpx \
-  --dir <主仓库父目录> --upstream https://github.com/webmproject/libvpx
+  --dir <主仓库>/projects --upstream https://github.com/webmproject/libvpx
 
 # 只看会生成什么，不落盘
 python3 <此 Skill 目录>/scripts/new_project.py media-libs/libvpx --dry-run
-
-# 主仓库里已有封装脚本时
-<主仓库>/scripts/new-project.sh media-libs/libvpx
 ```
 
 已存在同名目录时默认拒绝，确认覆盖用 `--force`。字段覆盖用
@@ -46,8 +48,19 @@ python3 <此 Skill 目录>/scripts/new_project.py media-libs/libvpx --dry-run
 5. **接入上游构建**：填 `cmake/upstream.cmake`，把 A/B 两侧都要用的二进制编出来。
    CMake / autotools / meson 三种做法见 `references/adapt-build-system.md`。
 6. **写真实用例**：复制 `test/cases/00_framework.sh`，改成调用上游程序，产出确定性文件。
-7. **挂子模块**（在主仓库里）：`./scripts/add-submodule.sh media-libs/libvpx`。
+7. **接入主仓库**（在主仓库里）：`git add projects/<repo>` 把它登记成 gitlink 并提交；
+   `projects/*/baseline/` 与 `projects/*/build/` 已在父仓 `.gitignore` 里，不会被误跟踪。
+   再把该仓库推到 GitHub（见"推送与认证"一节）。
 8. **更新状态**：`data/status.csv` 对应行改 `G1`，再跑 `python3 scripts/dashboard.py`。
+
+## 工作位置（重要）
+
+所有 28 个移植工程都在 `<主仓库>/projects/<pkg>-rvv`，**它们同时是 git 仓库和父仓的
+submodule**。写代码、跑编译、改用例都直接在这个目录里做，不要再在 `~/work/` 下另建
+`<pkg>-rvv` 副本——两套 checkout 会互相脱节，且主仓 `git status` 看不出指针落后。
+
+`baseline/` 是上游快照（自身也是 git 仓库），不进父仓也不进子仓，删了可以用
+`./scripts/fetch-upstream.sh` 重拉；`build/` 是构建产物，同理。
 
 ## 门禁与评审
 

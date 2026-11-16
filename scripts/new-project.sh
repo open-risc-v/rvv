@@ -5,8 +5,9 @@
 #   ./scripts/new-project.sh media-libs/libvpx --upstream https://github.com/webmproject/libvpx
 #   ./scripts/new-project.sh media-libs/libvpx --dry-run
 #
-# 生成位置：默认 ~/work/<short>-rvv（与本仓库同级），
-# 可用 --dir 覆盖。真正的生成逻辑在 Skill rvv-port-project 里。
+# 生成位置：<本仓库>/projects/<short>-rvv。
+# 所有移植工程都在本仓库的 projects/ 下管理、开发，不在主仓外另建工程。
+# 可用 --dir 覆盖（一般不需要）。真正的生成逻辑在 Skill rvv-port-project 里。
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 
@@ -14,6 +15,7 @@ find_skill() {
   local c
   for c in \
     "${RVV_PORT_SKILL:-}" \
+    "$ROOT/skill/rvv-port-project" \
     "$HOME/Library/Application Support/DoubaoWork/Default/.doubaowork/agent_mode/workspace/.user_skills/rvv-port-project" \
     "$HOME/.doubaowork/agent_mode/workspace/.user_skills/rvv-port-project" \
     "$ROOT/.user_skills/rvv-port-project"; do
@@ -42,7 +44,7 @@ for a in "$@"; do
   [ "$a" = "--dir" ] && has_dir=1
 done
 if [ "$has_dir" -eq 0 ]; then
-  args+=(--dir "$ROOT/../")
+  args+=(--dir "$ROOT/projects")
 fi
 
 exec python3 "$SKILL_DIR/scripts/new_project.py" "${args[@]}"

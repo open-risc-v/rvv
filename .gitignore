@@ -1,0 +1,4 @@
+
+# 子模块内的上游快照与构建产物：嵌套 git 仓库，不进父仓
+projects/*/baseline/
+projects/*/build/
