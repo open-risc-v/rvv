@@ -60,7 +60,7 @@ rvv（计划/门禁/汇总）
 | RVV-026 | `dev-libs/botan` | [botan-rvv](https://github.com/open-risc-v/botan-rvv) | W3 | P1 | D3 | **G2** | botan-rvv/docs/evidence/G2-baseline-20261113.md |
 | RVV-028 | `sys-cluster/ceph` | [ceph-rvv](https://github.com/open-risc-v/ceph-rvv) | W3 | P1 | D3 | **G1** | 骨架就位；源码未拉（体量大，需专用镜像与依赖） |
 | RVV-027 | `dev-libs/crypto++` | [cryptopp-rvv](https://github.com/open-risc-v/cryptopp-rvv) | W3 | P1 | D3 | **G2** | cryptopp-rvv/docs/evidence/G2-baseline-20261113.md |
-| RVV-032 | `dev-cpp/eigen` | [eigen-rvv](https://github.com/open-risc-v/eigen-rvv) | W3 | P1 | D4 | **G2** | eigen-rvv/docs/evidence/G2-baseline-20261113.md；自带 RVV10 后端但需 GCC 14（见 docs/15 §2） |
+| RVV-032 | `dev-cpp/eigen` | [eigen-rvv](https://github.com/open-risc-v/eigen-rvv) | W3 | P1 | D4 | **G3** | eigen-rvv/docs/evidence/G3-eigen-rvv10-20261116.md；上游 RVV10 后端（需 GCC≥14 + `-mrvv-vector-bits=zvl`），真机 imatmul 9.4× / dmatmul 17.6× 位精确 |
 | RVV-033 | `sci-libs/fftw` | [fftw-rvv](https://github.com/open-risc-v/fftw-rvv) | W3 | P1 | D5 | **G2** | fftw-rvv/docs/evidence/G2-baseline-20261113.md |
 | RVV-034 | `sci-libs/gdal` | [gdal-rvv](https://github.com/open-risc-v/gdal-rvv) | W3 | P1 | D3 | **G1** | 骨架就位；源码未拉（依赖 GDAL 全家桶，需先定最小配置） |
 | RVV-035 | `sci-chemistry/gromacs` | [gromacs-rvv](https://github.com/open-risc-v/gromacs-rvv) | W3 | P1 | D5 | **G2** | gromacs-rvv/docs/evidence/G2-baseline-20261113.md |

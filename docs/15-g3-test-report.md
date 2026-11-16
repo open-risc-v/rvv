@@ -102,11 +102,11 @@ A/B 口径（全部包统一）：
 - **openssl**：perlasm 层自带 `aes-riscv64-zvkned*.pl`、`sha256-riscv64-zvknha*.pl`、
   `sha512-*zvknhb*.pl`，target `linux64-riscv64` 即自动编入（见 §4.12）。真机 CBC 138×、CTR 284×。
 - **eigen**：`Eigen/src/Core/arch/RVV10/`（10 个文件）自带 packet math 后端，开关
-  `EIGEN_RISCV64_USE_RVV10`。但门控是 `defined(__riscv_v_fixed_vlen)`，而 **GCC 13 不认
-  `riscv_rvv_vector_bits` 属性**，手动注入 `-D__riscv_v_fixed_vlen=256` 后编到一半报
-  `member variables cannot have RVV type '__rvv_int32m1_t'`。要打通必须 GCC 14 交叉工具链，
-  当前所有镜像都是 GCC 13.3，取得 GCC 14 的 `apt-get install` / `docker build` 两条路都
-  被系统确认机制拦下，**G3 停在"后端已确认存在、工具链缺失"**。
+  `EIGEN_RISCV64_USE_RVV10`，门控 `defined(__riscv_v_fixed_vlen)`。**已打通**：GCC 13 不认
+  `-mrvv-vector-bits`（所以只能靠 `-D__riscv_v_fixed_vlen=256` 硬注入，又因 GCC 13 忽略
+  `riscv_rvv_vector_bits` 属性而报 `member variables cannot have RVV type`）；**GCC 14 起认该选项**，
+  配合 `-march=rv64gcv_zvl256b` 即可由编译器给出 `__riscv_v_fixed_vlen 256`。真机 GCC 15.2 原生
+  编译，imatmul 9.4×、dmatmul 17.6×，两侧逐字节一致（见 §4.14）。
 
 这把普查判据也补全了：`grep -rl "__riscv_v\|riscv_vector"` 只覆盖 intrinsics，
 **perlasm 类包（openssl / x264 / libvpx / ffmpeg）必须另查 `*/asm/*riscv*`**，
@@ -125,7 +125,6 @@ A/B 口径（全部包统一）：
 9. **x264**（24/19，先 SATD/SAD）
 10. **libde265**（9/8，先 IDCT）
 11. **botan / openssl**（AES/CTR；openssl 可先走 rv64gcv 汇编后端）
-12. **eigen**（无上游 RVV，packet math 要自写，量大但模式清晰）
 13. **gromacs**（无上游 RVV，G2 已用 GMX_SIMD=None，内核要自己起）
 
 ## 4.1 需要写内核的部分：libvpx 第一个内核（SAD）
@@ -557,3 +556,29 @@ zlib-ng 的 adler32 RVV 内核此前是唯一负优化项（0.928×）。本轮�
 （`ft` 是 `memset(0)`，未赋值即 NULL），必须同时处理 `ADLER32_FALLBACK`、
 `RISCV_RVV_NATIVE`、`native_adler32` 宏映射三处，换整链约 2.4%，**判定不划算**，
 保持上游默认。若换到 VLEN ≥ 512 的板子可用 `scripts/g3-adler-reeval.sh` 重测。
+
+### 4.14 Eigen RVV10 后端：工具链打通 + 真机 A/B
+
+卡点从来不是代码，是 `__riscv_v_fixed_vlen` 这个编译器契约：
+
+| 编译器 | `-march=rv64gcv_zvl256b` | 加 `-mrvv-vector-bits=zvl` |
+|---|---|---|
+| GCC 13.3（镜像默认） | 只给 `__riscv_v_min_vlen 256` | **选项不认识** |
+| GCC 14.2（`g++-14-riscv64-linux-gnu`） | 同上 | 认，给出 `__riscv_v_fixed_vlen 256` |
+| GCC 15.2（真机 Bianbu 自带） | 同上 | 认，给出 `__riscv_v_fixed_vlen 256` |
+
+即"`-mrvv-vector-bits` 是 Clang 专属"只对 GCC 13 成立。两侧唯一变量 `EIGEN_RISCV64_USE_RVV10`，
+同编译器同 march，真机原生（GCC 15.2）5 轮 best-of-5，重复三轮：
+
+| 用例 | off（标量 C++） | on（RVV10） | 加速 |
+|---|---|---|---|
+| `imatmul 64×64`（int32） | 0.646 ms | 0.068–0.069 ms | **9.4×** |
+| `dmatmul 128×128`（double） | 13.459–13.474 ms | 0.765–0.767 ms | **17.6×** |
+
+功能：`imatmul fnv=b6934bd0094dc25a mismatch=0/4096`、`dmatmul fnv=72dccc2fcdc7d3ba
+max_rel=2.346e-13`，三轮全 `BYTES_SAME`。
+
+**一条新教训**：容器 GCC 14 编出的 on 侧在 qemu（vlen=256）下 `imatmul` 哈希是
+`70008b1ef18c9fc1`（与 off 不一致），搬到真机却完全相同。**qemu 对 RVV10 的多寄存器整数
+kernel 模拟有缺陷**，它连功能都不能采信，只能当冒烟测试——配合 §4.9 的"qemu gather 慢 7.5 倍"，
+可以定论：**qemu 只回答"能不能启动与跑到结束"，功能与性能都必须真机。**

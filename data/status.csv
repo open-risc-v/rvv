@@ -30,7 +30,7 @@ RVV-028,sys-cluster/ceph,ceph-rvv,W3,P1,G1,,2026-11-13,骨架就位；源码未�
 RVV-029,net-libs/mbedtls,mbedtls-rvv,W4,P2,G0,,2026-11-13,docs/plan.md,
 RVV-030,dev-libs/rocksdb,rocksdb-rvv,W5,P2,G0,,2026-11-13,docs/plan.md,
 RVV-031,dev-libs/hyperscan,hyperscan-rvv,W4,P2,G0,,2026-11-13,docs/plan.md,
-RVV-032,dev-cpp/eigen,eigen-rvv,W3,P1,G2,,2026-11-13,"eigen-rvv/docs/evidence/G2-baseline-20261113.md: imatmul fnv=b6934bd0…（逐位）, dmatmul fnv=72dccc2f…（max_rel≈2e-13）",
+RVV-032,dev-cpp/eigen,eigen-rvv,W3,P1,G3,,2026-11-16,eigen-rvv/docs/evidence/G3-eigen-rvv10-20261116.md: 上游 RVV10 后端（需 GCC14+ 与 -mrvv-vector-bits=zvl）；真机 imatmul 9.4x / dmatmul 17.6x；mismatch=0/4096 位精确,qemu 对 RVV10 整数 kernel 模拟有缺陷，功能判定只在真机
 RVV-033,sci-libs/fftw,fftw-rvv,W3,P1,G2,,2026-11-13,fftw-rvv/docs/evidence/G2-baseline-20261113.md: dft1024 fnv=7c2af68f…（max_rel≈3e-14）；用 3.3.10 发布包,
 RVV-034,sci-libs/gdal,gdal-rvv,W3,P1,G1,,2026-11-13,骨架就位；源码未拉（依赖 GDAL 全家桶，需先定最小配置）,
 RVV-035,sci-chemistry/gromacs,gromacs-rvv,W3,P1,G2,,2026-11-13,gromacs-rvv/docs/evidence/G2-baseline-20261113.md: gmx editconf 417 B，哈希 8209a17e…（SIMD=None，内置 fftpack）,
