@@ -43,7 +43,7 @@
 | RVV-014 | `media-libs/zimg` | `zimg-rvv` | P1 | W3 | G3 | - | 2026-11-16 | FLOAT 路径、depth/colorspace 模块、运行时 CPU 探测未做 |
 | RVV-015 | `media-libs/libde265` | `libde265-rvv` | P1 | W3 | G3 | - | 2026-11-15 | 整链收益仅 +0.4%（8x8 IDCT 占比小）；16x16/32x32 受 lastCol 稀疏截断限制，需上层传 nnz；下一步 deblocking/qpel |
 | RVV-026 | `dev-libs/botan` | `botan-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
-| RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | P1 | W3 | G3 | - | 2026-11-16 | 仅接管 AES-256 纯 CTR；AES-128/192 与 CBC 仍走逐块路径 |
+| RVV-027 | `dev-libs/crypto++` | `cryptopp-rvv` | P1 | W3 | G3 | - | 2026-11-16 | 加密方向 only；解密/CBC 解密与 GCM 未做；受控实验证明收益来自轮函数不是派发粒度 |
 | RVV-028 | `sys-cluster/ceph` | `ceph-rvv` | P1 | W3 | G1 | - | 2026-11-13 | - |
 | RVV-032 | `dev-cpp/eigen` | `eigen-rvv` | P1 | W3 | G3 | - | 2026-11-16 | qemu 对 RVV10 整数 kernel 模拟有缺陷，功能判定只在真机 |
 | RVV-033 | `sci-libs/fftw` | `fftw-rvv` | P1 | W3 | G2 | - | 2026-11-13 | - |
@@ -85,6 +85,6 @@
 - `media-libs/zimg`（G3）：FLOAT 路径、depth/colorspace 模块、运行时 CPU 探测未做
 - `media-libs/libde265`（G3）：整链收益仅 +0.4%（8x8 IDCT 占比小）；16x16/32x32 受 lastCol 稀疏截断限制，需上层传 nnz；下一步 deblocking/qpel
 - `media-libs/opus`（G3）：整链收益 1.005x —— pitch xcorr 只占编码 ~1.7%；真正的热点 MDCT/FFT 与 comb_filter 未做；xcorr_kernel(ord 16-24) 不做
-- `dev-libs/crypto++`（G3）：仅接管 AES-256 纯 CTR；AES-128/192 与 CBC 仍走逐块路径
+- `dev-libs/crypto++`（G3）：加密方向 only；解密/CBC 解密与 GCM 未做；受控实验证明收益来自轮函数不是派发粒度
 - `dev-cpp/eigen`（G3）：qemu 对 RVV10 整数 kernel 模拟有缺陷，功能判定只在真机
 
