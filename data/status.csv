@@ -3,7 +3,7 @@ RVV-001,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,W1,P0,G3,,2026-11-14,libjpeg-
 RVV-002,x11-libs/pixman,pixman-rvv,W1,P0,G3,,2026-11-15,pixman-rvv/docs/evidence/G3-kernel-20261114.md: 上游自带 RVV，功能逐字节一致；真机 OVER 1024x1024 706.2 vs 225.1 mpx/s = 3.14x,
 RVV-003,media-libs/libpng,libpng-rvv,W1,P0,G3,,2026-11-14,libpng-rvv/docs/evidence/G3-kernel-20261114.md: 接线后 RVV vs 纯 C 一致，变异测试已证路径生效,
 RVV-004,sys-libs/zlib-ng,zlib-ng-rvv,W1,P0,G3,,2026-11-14,zlib-ng-rvv/docs/evidence/G3-kernel-20261114.md: WITH_RVV 开关两侧逐字节一致；真机性能待跑,
-RVV-005,dev-libs/openssl,openssl-rvv,W1,P0,G2,,2026-11-13,openssl-rvv/docs/evidence/G2-20261113.md: AES-128-CBC+SHA-256，run_ab 2/2 PASS | CROSS-baseline-20261113.md: linux64-riscv64 密文与 sha256 与 native 一致,
+RVV-005,dev-libs/openssl,openssl-rvv,W1,P0,G3,,2026-11-16,openssl-rvv/docs/evidence/G3-asm-zvk-20261116.md: 上游自带 Zvkned/Zvknha 汇编；真机 64KiB CBC 138x/143x、CTR 284x、SHA-256 8.5x；产物逐字节一致,OPENSSL_riscvcap 无法单扩展隔离；GCM/SHA-512 同类 A/B 未做
 RVV-006,dev-libs/libgcrypt,libgcrypt-rvv,W1,P1,G3,,2026-11-14,libgcrypt-rvv/docs/evidence/G3-kernel-20261114.md: asm 开/关两侧逐字节一致；真机性能待跑,
 RVV-007,media-libs/opencv,opencv-rvv,W6,P0,G0,,2026-11-13,docs/plan.md,
 RVV-008,media-libs/libwebp,libwebp-rvv,W2,P0,G3,,2026-11-15,libwebp-rvv/docs/evidence/G3-kernel-sse-20261115.md: 编码器 SSE RVV（16x16 1.81x，只接 16 宽块；整链 1.009x）,只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做

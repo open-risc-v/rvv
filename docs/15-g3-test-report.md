@@ -492,3 +492,33 @@ SAD 收口后，同族还剩 `vpx_sse`（平方差和，RD 代价与模式选择
 `vpx_sse` 的调用量远小于 SAD，其余（变换、量化、熵编码、RD 比较）还是 C。
 这条路的上限不在内核效率，在"接了几个内核"——要继续抬得接 `vpx_variance*`、
 `vpx_fdct/fht`、量化。
+
+### 4.12 openssl Zvk 汇编（第八个自带向量实现的包）
+
+openssl 停 G2 是因为"没碰向量"。查下来它**根本不需要我们写内核**：perlasm 层早就有
+
+```
+crypto/aes/asm/aes-riscv64-zvkned.pl / -zvkb-zvkned.pl / -zvbb-zvkg-zvkned.pl
+crypto/sha/asm/sha256-riscv64-zvkb-zvknha_or_zvknhb.pl / sha512-...zvknhb.pl / *-zbb.pl
+```
+
+`crypto/aes/build.info` 的 `IF[$target{asm_arch} eq "riscv64"]` 无条件编入，运行时按 hwprobe 选择。
+
+**这也暴露了普查方法的盲区**：`grep -rl "__riscv_v\|riscv_vector"` 只覆盖 intrinsics，
+覆盖不到 perlasm。perlasm 类包（openssl / x264 / libvpx / ffmpeg）要先看 `*/asm/*riscv*`。
+
+口径：两侧 C 代码同为 `-march=rv64gc`（无向量），唯一变量是 `no-asm`。真机 K3、64 KiB：
+
+| 路径 | off | on | 比值 |
+|---|---|---|---|
+| AES-128-CBC enc | 7.03–7.07 ms | **0.051 ms** | **≈138×** |
+| AES-128-CBC dec | 7.43 ms | **0.052 ms** | **≈143×** |
+| AES-128-CTR | 7.10–7.12 ms | **0.025 ms** | **≈284×** |
+| SHA-256 | 0.662–0.665 ms | **0.078 ms** | **8.5×** |
+
+产物逐字节一致（`fnv_ct=cc18494f5e673a69`、`fnv_ctr=5c61394dab555006`、`sha256=b5c66c4d…`）。
+
+归因三重证据：①`libcrypto.a` 里 43 个 zvk 符号、含 `aes-gcm-...zvkned.o`；②qemu（无 Zvkned、
+有 Zbb）里 SHA-256 快 1.74× 而 CBC/CTR 不变 → Zvkned 只在真机执行；③同机 libgcrypt 的
+Zvkned CTR 是 39.4×，量级同源。**没能拿到单扩展隔离**：`OPENSSL_riscvcap` 在 4.2-dev 上
+只要被设置就整体退回保守路径（六种写法全试过）。
