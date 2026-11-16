@@ -7,7 +7,7 @@ RVV-005,dev-libs/openssl,openssl-rvv,W1,P0,G3,,2026-11-16,openssl-rvv/docs/evide
 RVV-006,dev-libs/libgcrypt,libgcrypt-rvv,W1,P1,G3,,2026-11-14,libgcrypt-rvv/docs/evidence/G3-kernel-20261114.md: asm 开/关两侧逐字节一致；真机性能待跑,
 RVV-007,media-libs/opencv,opencv-rvv,W6,P0,G0,,2026-11-13,docs/plan.md,
 RVV-008,media-libs/libwebp,libwebp-rvv,W2,P0,G3,,2026-11-15,libwebp-rvv/docs/evidence/G3-kernel-sse-20261115.md: 编码器 SSE RVV（16x16 1.81x，只接 16 宽块；整链 1.009x）,只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做
-RVV-009,media-libs/libvpx,libvpx-rvv,W2,P0,G3,,2026-11-16,libvpx-rvv/docs/evidence/G3-kernel-sad-20261115.md + G3-kernel-sse-20261116.md: SAD v4 8x8 1.21x/16x16 2.18x/32x32 4.28x/64x64 3.54x；SSE 内核 16x16 3.00x/32x32 4.88x/64x64 6.52x；整链 1.131x,rtcd 运行时分发未做；variance/fdct/量化未接，整链上限受限于接入面
+RVV-009,media-libs/libvpx,libvpx-rvv,W2,P0,G3,,2026-11-16,libvpx-rvv/docs/evidence/{G3-kernel-sad-20261115,G3-kernel-sse-20261116,G3-kernel-variance-20261116}.md: SAD v4 16x16 2.18x、SSE 3.00-6.52x、variance 16x16 2.37x/32x32 2.84x/64x64 1.70x；整链 VP8 352x288 SAD+SSE+variance 597.16->504.08ms = 1.185x，码流与解码像素全同,fdct/fht/quantize 未接；sub_pixel 前置双线性滤波仍 C；rtcd 运行时分发未做
 RVV-010,media-libs/openh264,openh264-rvv,W2,P0,G3,,2026-11-15,openh264-rvv/docs/evidence/G3-kernel-sad-20261115.md: SAD 内核 16x16 2.91x/8x8 1.36x（4x4/4x8 负优化已保留 C）；编码器级真机 1.018x；qemu 码流/像素与 G2 基线一致,
 RVV-011,media-video/ffmpeg,ffmpeg-rvv,W5,P0,G0,,2026-11-13,docs/plan.md,
 RVV-012,media-libs/libaom,libaom-rvv,W2,P1,G3,,2026-11-14,libaom-rvv/docs/evidence/G3-kernel-20261114.md: ENABLE_RVV 开关两侧一致；真机性能待跑,

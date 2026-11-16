@@ -34,7 +34,7 @@
 | RVV-005 | `dev-libs/openssl` | `openssl-rvv` | P0 | W1 | G3 | - | 2026-11-16 | OPENSSL_riscvcap 无法单扩展隔离（GCM 归因靠 nm 符号）；解密方向未单列、RSA/ECC 未测 |
 | RVV-006 | `dev-libs/libgcrypt` | `libgcrypt-rvv` | P1 | W1 | G3 | - | 2026-11-14 | - |
 | RVV-008 | `media-libs/libwebp` | `libwebp-rvv` | P0 | W2 | G3 | - | 2026-11-15 | 只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做 |
-| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G3 | - | 2026-11-16 | rtcd 运行时分发未做；variance/fdct/量化未接，整链上限受限于接入面 |
+| RVV-009 | `media-libs/libvpx` | `libvpx-rvv` | P0 | W2 | G3 | - | 2026-11-16 | G3-kernel-sse-20261116 |
 | RVV-010 | `media-libs/openh264` | `openh264-rvv` | P0 | W2 | G3 | - | 2026-11-15 | - |
 | RVV-017 | `media-libs/opus` | `opus-rvv` | P0 | W2 | G3 | - | 2026-11-15 | 整链收益 1.005x —— pitch xcorr 只占编码 ~1.7%；真正的热点 MDCT/FFT 与 comb_filter 未做；xcorr_kernel(ord 16-24) 不做 |
 | RVV-018 | `media-libs/webrtc-audio-processing` | `webrtc-ap-rvv` | P0 | W2 | G2 | - | 2026-11-13 | - |
@@ -80,7 +80,7 @@
 
 - `dev-libs/openssl`（G3）：OPENSSL_riscvcap 无法单扩展隔离（GCM 归因靠 nm 符号）；解密方向未单列、RSA/ECC 未测
 - `media-libs/libwebp`（G3）：只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做
-- `media-libs/libvpx`（G3）：rtcd 运行时分发未做；variance/fdct/量化未接，整链上限受限于接入面
+- `media-libs/libvpx`（G3）：G3-kernel-sse-20261116
 - `media-libs/x264`（G3）：satd 未向量化（subme>=4 时比 SAD 更热）；4x16 与 10bit 未接；无运行时 CPU 探测（编译期 HAVE_RVV_KERNELS）
 - `media-libs/zimg`（G3）：FLOAT 路径、depth/colorspace 模块、运行时 CPU 探测未做
 - `media-libs/libde265`（G3）：整链收益仅 +0.4%（8x8 IDCT 占比小）；16x16/32x32 受 lastCol 稀疏截断限制，需上层传 nnz；下一步 deblocking/qpel
