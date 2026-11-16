@@ -60,7 +60,7 @@ rvv（计划/门禁/汇总）
 | RVV-026 | `dev-libs/botan` | [botan-rvv](https://github.com/open-risc-v/botan-rvv) | W3 | P1 | D3 | **G2** | botan-rvv/docs/evidence/G2-baseline-20261113.md |
 | RVV-028 | `sys-cluster/ceph` | [ceph-rvv](https://github.com/open-risc-v/ceph-rvv) | W3 | P1 | D3 | **G1** | 骨架就位；源码未拉（体量大，需专用镜像与依赖） |
 | RVV-027 | `dev-libs/crypto++` | [cryptopp-rvv](https://github.com/open-risc-v/cryptopp-rvv) | W3 | P1 | D3 | **G2** | cryptopp-rvv/docs/evidence/G2-baseline-20261113.md |
-| RVV-032 | `dev-cpp/eigen` | [eigen-rvv](https://github.com/open-risc-v/eigen-rvv) | W3 | P1 | D4 | **G2** | eigen-rvv/docs/evidence/G2-baseline-20261113.md |
+| RVV-032 | `dev-cpp/eigen` | [eigen-rvv](https://github.com/open-risc-v/eigen-rvv) | W3 | P1 | D4 | **G2** | eigen-rvv/docs/evidence/G2-baseline-20261113.md；自带 RVV10 后端但需 GCC 14（见 docs/15 §2） |
 | RVV-033 | `sci-libs/fftw` | [fftw-rvv](https://github.com/open-risc-v/fftw-rvv) | W3 | P1 | D5 | **G2** | fftw-rvv/docs/evidence/G2-baseline-20261113.md |
 | RVV-034 | `sci-libs/gdal` | [gdal-rvv](https://github.com/open-risc-v/gdal-rvv) | W3 | P1 | D3 | **G1** | 骨架就位；源码未拉（依赖 GDAL 全家桶，需先定最小配置） |
 | RVV-035 | `sci-chemistry/gromacs` | [gromacs-rvv](https://github.com/open-risc-v/gromacs-rvv) | W3 | P1 | D5 | **G2** | gromacs-rvv/docs/evidence/G2-baseline-20261113.md |
@@ -72,12 +72,12 @@ rvv（计划/门禁/汇总）
 | RVV-009 | `media-libs/libvpx` | [libvpx-rvv](https://github.com/open-risc-v/libvpx-rvv) | W2 | P0 | D5 | **G3** | libvpx-rvv/docs/evidence/G3-kernel-sad-20261115.md + G3-kernel-sse-20261116.md |
 | RVV-008 | `media-libs/libwebp` | [libwebp-rvv](https://github.com/open-risc-v/libwebp-rvv) | W2 | P0 | D3 | **G3** | libwebp-rvv/docs/evidence/G3-kernel-sse-20261115.md |
 | RVV-010 | `media-libs/openh264` | [openh264-rvv](https://github.com/open-risc-v/openh264-rvv) | W2 | P0 | D4 | **G3** | openh264-rvv/docs/evidence/G3-kernel-sad-20261115.md |
-| RVV-005 | `dev-libs/openssl` | [openssl-rvv](https://github.com/open-risc-v/openssl-rvv) | W1 | P0 | D4 | **G2** | openssl-rvv/docs/evidence/G2-20261113.md |
+| RVV-005 | `dev-libs/openssl` | [openssl-rvv](https://github.com/open-risc-v/openssl-rvv) | W1 | P0 | D4 | **G3** | openssl-rvv/docs/evidence/G3-asm-zvk-20261116.md（上游自带 Zvkned/Zvknha 汇编；真机 CBC 138×/143×、CTR 284×、SHA-256 8.5×） |
 | RVV-017 | `media-libs/opus` | [opus-rvv](https://github.com/open-risc-v/opus-rvv) | W2 | P0 | D3 | **G3** | opus-rvv/docs/evidence/G3-kernel-xcorr-20261115.md |
 | RVV-002 | `x11-libs/pixman` | [pixman-rvv](https://github.com/open-risc-v/pixman-rvv) | W1 | P0 | D4 | **G3** | pixman-rvv/docs/evidence/G3-kernel-20261114.md |
 | RVV-018 | `media-libs/webrtc-audio-processing` | [webrtc-ap-rvv](https://github.com/open-risc-v/webrtc-ap-rvv) | W2 | P0 | D3 | **G2** | webrtc-ap-rvv/docs/evidence/G1-native-build-20261113.md + docs/12-w2-baseline.md |
 | RVV-013 | `media-libs/x264` | [x264-rvv](https://github.com/open-risc-v/x264-rvv) | W3 | P1 | D5 | **G3** | x264-rvv/docs/evidence/G3-kernel-sad-20261115.md |
-| RVV-014 | `media-libs/zimg` | [zimg-rvv](https://github.com/open-risc-v/zimg-rvv) | W3 | P1 | D3 | **G3** | zimg-rvv/docs/evidence/G3-kernel-resize-v-20261116.md |
+| RVV-014 | `media-libs/zimg` | [zimg-rvv](https://github.com/open-risc-v/zimg-rvv) | W3 | P1 | D3 | **G3** | zimg-rvv/docs/evidence/G3-kernel-resize-{v,h}-20261116.md（垂直 7.57×、水平 2.67×、整链 4.24×） |
 | RVV-004 | `sys-libs/zlib-ng` | [zlib-ng-rvv](https://github.com/open-risc-v/zlib-ng-rvv) | W1 | P0 | D2 | **G3** | zlib-ng-rvv/docs/evidence/G3-kernel-20261114.md |
 
 ## 度量口径（所有子项目统一）

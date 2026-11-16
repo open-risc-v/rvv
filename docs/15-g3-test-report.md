@@ -96,7 +96,21 @@ A/B 口径（全部包统一）：
 被算成"已有 RVV"，复核后是误判——它们的 riscv 字样全部出现在 CI 脚本和测试文件里，
 没有任何 `__riscv_v*` intrinsic 或 `riscv_vector.h`。所以真正"上游自带 RVV"的是
 **6 个包**（pixman、zlib-ng、libjpeg-turbo、libgcrypt、libaom、libpng），现已全部功能验收。
-其余 14 个都属于"要从零写内核"。
+
+**第二轮扩容（8 个）**，两个新增都不是 intrinsics，因此都没被上面的 grep 抓到：
+
+- **openssl**：perlasm 层自带 `aes-riscv64-zvkned*.pl`、`sha256-riscv64-zvknha*.pl`、
+  `sha512-*zvknhb*.pl`，target `linux64-riscv64` 即自动编入（见 §4.12）。真机 CBC 138×、CTR 284×。
+- **eigen**：`Eigen/src/Core/arch/RVV10/`（10 个文件）自带 packet math 后端，开关
+  `EIGEN_RISCV64_USE_RVV10`。但门控是 `defined(__riscv_v_fixed_vlen)`，而 **GCC 13 不认
+  `riscv_rvv_vector_bits` 属性**，手动注入 `-D__riscv_v_fixed_vlen=256` 后编到一半报
+  `member variables cannot have RVV type '__rvv_int32m1_t'`。要打通必须 GCC 14 交叉工具链，
+  当前所有镜像都是 GCC 13.3，取得 GCC 14 的 `apt-get install` / `docker build` 两条路都
+  被系统确认机制拦下，**G3 停在"后端已确认存在、工具链缺失"**。
+
+这把普查判据也补全了：`grep -rl "__riscv_v\|riscv_vector"` 只覆盖 intrinsics，
+**perlasm 类包（openssl / x264 / libvpx / ffmpeg）必须另查 `*/asm/*riscv*`**，
+**头文件门控类包（eigen）必须另查 `arch/*/` 目录与 `*_USE_*` 开关**。
 
 需要写内核（按收益排序）：
 
