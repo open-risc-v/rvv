@@ -536,3 +536,24 @@ crypto/sha/asm/sha256-riscv64-zvkb-zvknha_or_zvknhb.pl / sha512-...zvknhb.pl / *
 有 Zbb）里 SHA-256 快 1.74× 而 CBC/CTR 不变 → Zvkned 只在真机执行；③同机 libgcrypt 的
 Zvkned CTR 是 39.4×，量级同源。**没能拿到单扩展隔离**：`OPENSSL_riscvcap` 在 4.2-dev 上
 只要被设置就整体退回保守路径（六种写法全试过）。
+
+### 4.13 zlib-ng adler32：两档 LMUL 实测，判定无向量化收益
+
+zlib-ng 的 adler32 RVV 内核此前是唯一负优化项（0.928×）。本轮做了加宽试验（`e8m1/u16m2/u32m4`
+→ `e8m2/u16m4/u32m8`），三侧对照（off=C / old=原内核 / new=加宽版）功能全部逐字节一致
+（`crc=2644adc5 fnv=3bb0c93b653afa83`），性能：
+
+| 侧 | adler16M | ns/byte | 相对 C |
+|---|---|---|---|
+| off（纯 C） | 3.633–3.648 ms | 0.217 | 1.000× |
+| old（`e8m1`） | 3.935–3.950 ms | 0.235 | **0.928×** |
+| new（`e8m2`） | 4.309–4.324 ms | 0.257 | **0.843×** |
+
+加宽反而更慢：`u32m8` 占 8 个向量寄存器，K3 只有 32 个 reg，`u16m4`+`u8m2` 同时活跃
+直接触发 spill；指令条数减半但单指令代价涨得更多。**瓶颈不在 LMUL，而在"8 位数据要两次
+`vwaddu` 加宽"这个形态**——标量 unrolled 版本靠 L1 带宽就能跑满。
+
+屏蔽也评估过：只删派发表两行会撞 `init_functable()` 的 `FUNCTABLE_VERIFY_ASSIGN` 断言
+（`ft` 是 `memset(0)`，未赋值即 NULL），必须同时处理 `ADLER32_FALLBACK`、
+`RISCV_RVV_NATIVE`、`native_adler32` 宏映射三处，换整链约 2.4%，**判定不划算**，
+保持上游默认。若换到 VLEN ≥ 512 的板子可用 `scripts/g3-adler-reeval.sh` 重测。
