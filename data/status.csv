@@ -7,7 +7,7 @@ RVV-005,dev-libs/openssl,openssl-rvv,W1,P0,G3,,2026-11-16,openssl-rvv/docs/evide
 RVV-006,dev-libs/libgcrypt,libgcrypt-rvv,W1,P1,G3,,2026-11-14,libgcrypt-rvv/docs/evidence/G3-kernel-20261114.md: asm 开/关两侧逐字节一致；真机性能待跑,
 RVV-007,media-libs/opencv,opencv-rvv,W6,P0,G0,,2026-11-13,docs/plan.md,
 RVV-008,media-libs/libwebp,libwebp-rvv,W2,P0,G3,,2026-11-15,libwebp-rvv/docs/evidence/G3-kernel-sse-20261115.md: 编码器 SSE RVV（16x16 1.81x，只接 16 宽块；整链 1.009x）,只剩 16 宽块可接（8x8 1.24x、4x4 1.06x，全开时整链 0.968x 退化）；TDisto/FTransform/Quantize 与无损路径未做
-RVV-009,media-libs/libvpx,libvpx-rvv,W2,P0,G3,,2026-11-16,libvpx-rvv/docs/evidence/{G3-kernel-sad-20261115,G3-kernel-sse-20261116,G3-kernel-variance-20261116}.md: SAD v4 16x16 2.18x、SSE 3.00-6.52x、variance 16x16 2.37x/32x32 2.84x/64x64 1.70x；整链 VP8 352x288 SAD+SSE+variance 597.16->504.08ms = 1.185x，码流与解码像素全同,fdct/fht/quantize 未接；sub_pixel 前置双线性滤波仍 C；rtcd 运行时分发未做
+RVV-009,media-libs/libvpx,libvpx-rvv,W2,P0,G3,,2026-11-16,"libvpx-rvv/docs/evidence/{G3-kernel-sad-20261115,G3-kernel-sse-20261116G3-kernel-variance-20261116}.md: SAD v4 16x16 2.18x、SSE 3.00-6.52x、variance 16x16 2.37x/32x32 2.84x/64x64 1.70x；整链 VP8 352x288 SAD+SSE+variance 597.16->504.08ms = 1.185x，码流与解码像素全同",fdct/fht/quantize 未接；sub_pixel 前置双线性滤波仍 C；rtcd 运行时分发未做
 RVV-010,media-libs/openh264,openh264-rvv,W2,P0,G3,,2026-11-15,openh264-rvv/docs/evidence/G3-kernel-sad-20261115.md: SAD 内核 16x16 2.91x/8x8 1.36x（4x4/4x8 负优化已保留 C）；编码器级真机 1.018x；qemu 码流/像素与 G2 基线一致,
 RVV-011,media-video/ffmpeg,ffmpeg-rvv,W5,P0,G0,,2026-11-13,docs/plan.md,
 RVV-012,media-libs/libaom,libaom-rvv,W2,P1,G3,,2026-11-14,libaom-rvv/docs/evidence/G3-kernel-20261114.md: ENABLE_RVV 开关两侧一致；真机性能待跑,
@@ -17,13 +17,13 @@ RVV-015,media-libs/libde265,libde265-rvv,W3,P1,G3,,2026-11-15,libde265-rvv/docs/
 RVV-016,media-libs/x265,x265-rvv,W4,P2,G0,,2026-11-13,docs/plan.md,
 RVV-017,media-libs/opus,opus-rvv,W2,P0,G3,,2026-11-15,opus-rvv/docs/evidence/G3-kernel-xcorr-20261115.md: celt_pitch_xcorr RVV（内核 5.6x，整链仅 1.005x，占比归因）；qemu 码流+PCM 与 G2 一致,整链收益 1.005x —— pitch xcorr 只占编码 ~1.7%；真正的热点 MDCT/FFT 与 comb_filter 未做；xcorr_kernel(ord 16-24) 不做
 RVV-018,media-libs/webrtc-audio-processing,webrtc-ap-rvv,W2,P0,G2,,2026-11-13,webrtc-ap-rvv/docs/evidence/G1-native-build-20261113.md + docs/12-w2-baseline.md: native A/B 与 riscv64 交叉全字段一致,
-RVV-019,media-libs/speexdsp,speexdsp-rvv,W4,P1,G0,,2026-11-13,docs/plan.md,
-RVV-020,media-libs/flac,flac-rvv,W4,P1,G0,,2026-11-13,docs/plan.md,
+RVV-019,media-libs/speexdsp,speexdsp-rvv,W4,P1,G1,,2026-11-16,G1 骨架+交叉编译+A/B ALL PASS（容器 rvv-cross:2 内 riscv64 交叉编、qemu 仅作功能验证）；内核差分 2/2 共 102 次比较；上游真实构建与真实包用例尚未接入,上游构建未接入(upstream.cmake 为空)；真实包用例未写
+RVV-020,media-libs/flac,flac-rvv,W4,P1,G1,,2026-11-16,G1 骨架+交叉编译+A/B ALL PASS（容器 rvv-cross:2 内 riscv64 交叉编、qemu 仅作功能验证）；内核差分 2/2 共 102 次比较；上游真实构建与真实包用例尚未接入,上游构建未接入(upstream.cmake 为空)；真实包用例未写
 RVV-021,media-libs/openal,openal-soft-rvv,W5,P2,G0,,2026-11-13,docs/plan.md,
-RVV-022,media-sound/mpg123,mpg123-rvv,W5,P2,G0,,2026-11-13,docs/plan.md,
+RVV-022,media-sound/mpg123,mpg123-rvv,W5,P2,G1,,2026-11-16,G1 骨架+交叉编译+A/B ALL PASS（容器 rvv-cross:2 内 riscv64 交叉编、qemu 仅作功能验证）；内核差分 2/2 共 102 次比较；上游真实构建与真实包用例尚未接入,上游构建未接入(upstream.cmake 为空)；真实包用例未写
 RVV-023,media-sound/pulseaudio,pulseaudio-rvv,W5,P2,G0,,2026-11-13,docs/plan.md,
 RVV-024,media-libs/speex,libspeex-rvv,W6,P3,G0,,2026-11-13,docs/plan.md,
-RVV-025,dev-libs/nettle,nettle-rvv,W4,P1,G0,,2026-11-13,docs/plan.md,
+RVV-025,dev-libs/nettle,nettle-rvv,W4,P1,G1,,2026-11-16,G1 骨架+交叉编译+A/B ALL PASS（容器 rvv-cross:2 内 riscv64 交叉编、qemu 仅作功能验证）；内核差分 2/2 共 102 次比较；上游真实构建与真实包用例尚未接入,上游构建未接入(upstream.cmake 为空)；真实包用例未写
 RVV-026,dev-libs/botan,botan-rvv,W3,P1,G2,,2026-11-13,botan-rvv/docs/evidence/G2-baseline-20261113.md: sha256 fnv=ab0624b9… aesctr fnv=6b642726…，native≡riscv64,
 RVV-027,dev-libs/crypto++,cryptopp-rvv,W3,P1,G3,,2026-11-16,cryptopp-rvv/docs/evidence/G3-kernel-aes-ctr-20261116.md: Zvkned 覆盖 CTR+CBC×128/192/256 六路径，真机 64KiB 3.14-3.25x（256CTR 0.951→0.302ms），FNV 全同 BYTES_SAME,加密方向 only；解密/CBC 解密与 GCM 未做；受控实验证明收益来自轮函数不是派发粒度
 RVV-028,sys-cluster/ceph,ceph-rvv,W3,P1,G1,,2026-11-13,骨架就位；源码未拉（体量大，需专用镜像与依赖）,
@@ -45,5 +45,5 @@ RVV-043,dev-lang/rust,rust-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,
 RVV-044,dev-lang/go,go-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,
 RVV-045,media-video/vlc,vlc-rvv,W6,P3,G0,,2026-11-13,docs/plan.md,
 RVV-046,media-libs/libsdl2,SDL2-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,
-RVV-047,games-board/stockfish,stockfish-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,
+RVV-047,games-board/stockfish,stockfish-rvv,W5,P3,G1,,2026-11-16,G1 骨架+交叉编译+A/B ALL PASS（容器 rvv-cross:2 内 riscv64 交叉编、qemu 仅作功能验证）；内核差分 2/2 共 102 次比较；上游真实构建与真实包用例尚未接入,上游构建未接入(upstream.cmake 为空)；真实包用例未写
 RVV-048,app-crypt/johntheripper,john-rvv,W5,P3,G0,,2026-11-13,docs/plan.md,

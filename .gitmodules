@@ -64,3 +64,18 @@
 [submodule "projects/cryptopp-rvv"]
 	path = projects/cryptopp-rvv
 	url = https://github.com/open-risc-v/cryptopp-rvv.git
+[submodule "projects/speexdsp-rvv"]
+	path = projects/speexdsp-rvv
+	url = ../speexdsp-rvv
+[submodule "projects/flac-rvv"]
+	path = projects/flac-rvv
+	url = ../flac-rvv
+[submodule "projects/mpg123-rvv"]
+	path = projects/mpg123-rvv
+	url = ../mpg123-rvv
+[submodule "projects/nettle-rvv"]
+	path = projects/nettle-rvv
+	url = ../nettle-rvv
+[submodule "projects/stockfish-rvv"]
+	path = projects/stockfish-rvv
+	url = ../stockfish-rvv
