@@ -165,6 +165,25 @@ botan、cryptopp、eigen、zimg、pixman、fftw、webrtc-ap、openssl、gromacs�
 - 尚未上机 13 个：libspeex、speexdsp、nettle、libgcrypt、botan、cryptopp、eigen、zimg、pixman、
   fftw、webrtc-ap、openssl、gromacs
 
+
+## 2k. openssl（真机）
+
+- 两侧 `./Configure --prefix=/tmp/ssl-<v> no-shared no-tests linux64-riscv64 -march=<isa>` + `make -j8 build_sw`，均 rc=0
+- 二进制 `bs-<v>/apps/openssl`：`OpenSSL 4.2.0-dev`
+- **SHA-256**（16 MiB `data.bin`）：两侧摘要完全相同 `686d5acd68f3…a8b6`
+- **AES-256-CBC**（`-K 0…0 -iv 0…0` 固定密钥/IV，避免随机 salt）：密文 md5 一致 `7ca3a152d6a7`
+- 耗时：sha256 40 ms vs 40 ms（1.00x）；aes 56/58 vs 60/59 ms（≈0.95x）
+- 结论：openssl 4.2 dev 在本机没有走 RVV 汇编路径（crypto 通用实现），A/B 一致但无加速
+
+## 2l. 真机进度（更新）
+
+已跑通 **12 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264、openssl。
+
+卡点 2：libvpx（vpxenc 未产出）、stockfish（缺 NNUE 网络文件）。
+在编：botan。
+未上机 12：libspeex、speexdsp、nettle、libgcrypt、cryptopp、eigen、zimg、pixman、fftw、webrtc-ap、gromacs。
+
 ## 3. 结论
 
 真机四包结果一览：
