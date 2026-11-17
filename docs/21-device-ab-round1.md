@@ -198,12 +198,12 @@ speex 的 0.24x 是目前最严重的回退：`-march=rv64gcv` 让 GCC 把定点
 
 ## 2n. 真机进度（更新）
 
-已跑通 **19 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
-libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman、fftw、eigen。
+已跑通 **22 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman、fftw、eigen、botan、libgcrypt。
 
 在编：botan（configure.py 方式）。
 卡点 2：libvpx（vpxenc 未产出）、stockfish（缺 NNUE 网络）。
-未上机 6：libgcrypt、eigen、zimg、webrtc-ap、gromacs。
+未上机 3：zimg、webrtc-ap、gromacs。
 
 
 ## 2o. nettle（真机，工程内探针）
@@ -278,6 +278,26 @@ Eigen 3.4 没有 RVV packet 后端，`-march=rv64gcv` 只是让 GCC 向量化 Ei
 
 botan 的 SHA-256 是本轮第二个正收益点，但同一构建下 AES 掉 26%——说明「整包开 RVV」同一份
 代码里既有赚也有赔，必须按内核粒度开关。
+
+
+## 2s. libgcrypt（真机）
+
+依赖 `libgpg-error`：设备 apt 的 `libgpg-error-dev` 是 **1.58**（满足上游 ≥1.56 要求，无需自建）。
+
+- 构建：`autoreconf -fi` + `./configure --disable-shared --enable-static --disable-doc CFLAGS="-march=<isa> -O2"`，
+  两侧均成功（快照里没有现成 `configure`，必须先 `autoreconf`）。
+- 功能：`tests/basic` 双跑 **rc=0**，两侧日志 **md5 完全相同**（1 个唯一值）——所有 KAT 都过。
+- 探针 `/tmp/gcrypt_probe.c`：SHA-256 × 8（16 MiB）+ AES-256-ECB 链式 1048576 块。
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| SHA-256 摘要 | `686d5acd…43c2e8b6` | **相同**（与 openssl/nettle/botan 四方交叉一致） |
+| AES-256 指纹 | `db4e3b95b6168728` | **相同** |
+| sha256 8 轮 | 102.3 / 102.0 ms | 102.2 / 102.1 ms（1.00x） |
+| aes 1M 块 | 43.2 / 43.3 ms | 52.3 / 52.3 ms（**0.83x**） |
+
+libgcrypt 的 AES 有 ARMv8/x86 的汇编快路，RISC-V 走纯 C + 查表；开 RVV 后 GCC 把 S-box
+查表循环重排，掉 17%。sha256 完全持平。
 
 ## 3. 结论
 
