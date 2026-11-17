@@ -77,6 +77,23 @@ libpng 上游没有 RISC-V 内核，`-march=rv64gcv` 只是让编译器有机会
 
 `-march=rv64gcv` 让 GCC 自动向量化了部分内循环，但在 352×288 小帧上向量化的启动与收尾开销大于收益。
 
+
+## 2d. 第二批：libjpeg-turbo / flac / opus（真机）
+
+方法同上：设备上 clone 工程 → `fetch-upstream.sh` → 同源两份、`-O2`、唯一变量是 `-march`。
+
+| 包 | 输入与命令 | 功能判定 | cpu | rvv | 比值 |
+|---|---|---|---|---|---|
+| libjpeg-turbo | 2048² PPM，`cjpeg -quality 90` | JPEG 1796273 B，md5 一致；解码 PPM md5 一致 | enc 75 ms / dec 88 ms | enc 77 ms / dec 90 ms | 1.00x / 0.98x |
+| flac | 30 s 双声道正弦 WAV，`flac -5` | flac 425977 B，md5 一致；解码 WAV md5 一致 | enc 182 ms / dec 64 ms | enc 121 ms / dec 74 ms | **1.50x** / 0.86x |
+| opus | 20 s 48 kHz 单声道，`opus_demo -e audio 48000 1 64000` | 码流 207768 B，md5 一致；解码 PCM md5 一致 | enc 228 ms / dec 95 ms | enc 309 ms / dec 111 ms | 0.74x / 0.86x |
+
+flac 的 1.50x 全部来自 GCC 自动向量化（上游没有 RISC-V 内核）；opus 反而被自动向量化拖慢，
+说明这类包必须**手写内核 + 关闭全局自动向量化**（或按函数粒度 `#pragma` 控制），否则收益为负。
+
+当前真机已验证 **7 / 26**：
+zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus。
+
 ## 3. 结论
 
 真机四包结果一览：
