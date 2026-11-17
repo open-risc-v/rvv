@@ -1,0 +1,27 @@
+id,pkg,project,build_sys,march,verdict,evidence,note
+RVV-001,media-libs/zlib-ng,zlib-ng-rvv,cmake,rv64gc,PASS,in=200003 out=73562 crc=2644adc5 fnv=3bb0c93b653afa83,压缩字节也一致
+RVV-002,x11-libs/pixman,pixman-rvv,meson,rv64gc,PASS,size=129x97 fnv=066ba22180589ab5,
+RVV-003,media-libs/libpng,libpng-rvv,cmake,rv64gc,PASS,size=131x99 fnv_px=7322844870c2c46b,native 码流 28936 字节、riscv 28995，像素一致
+RVV-004,media-libs/libjpeg-turbo,libjpeg-turbo-rvv,cmake,rv64gc,PASS,size=128x96 jpeg=2799 fnv_jpeg=f0dd2e9ada7876e4 fnv_px=79887ab513b04ba1,
+RVV-005,media-libs/libwebp,libwebp-rvv,cmake,rv64gc,PASS,lossless=30026 fnv_ll=69c27e48073e9609 px_diff=0,
+RVV-006,media-video/libde265,libde265-rvv,cmake,rv64gc,PASS,dec frames=10 bytes=61440 fnv_px=cf67fb9981835c6a,
+RVV-007,media-libs/opus,opus-rvv,autotools,rv64gc,PASS,frames=120 bytes=19200 fnv_bit=a04caa33e5671901 fnv_pcm=74bc2325f58a2e04,
+RVV-008,media-libs/libvpx,libvpx-rvv,autotools,rv64gc,PASS,frames=10 bytes=10766 fnv_bit=62a63640d7690a11 dec fnv_px=f85eaa8153b093fc,码流一致
+RVV-009,media-libs/x264,x264-rvv,autotools,rv64gc,PASS,enc frames=10 bytes=690 fnv_bit=91e876b2b8b16d8c,
+RVV-010,media-libs/openh264,openh264-rvv,make,rv64gc,PASS,frames=10 bytes=8619 fnv_bit=316f1b141efb69a7 dec fnv_px=762b92ca7ae625a5,ARCH 无 riscv，走纯 C
+RVV-011,media-libs/flac,flac-rvv,autotools,rv64gc,PASS,samples=4096 flac=5567 fnv_stream=3ee0eaec79e78bfd fnv_pcm=75f1bdc1ebc3575b,
+RVV-012,media-libs/speex,libspeex-rvv,autotools,rv64gc,PASS,nb/wb/uwb x q2/q8 六用例 ALL PASS,
+RVV-013,media-libs/speexdsp,speexdsp-rvv,autotools,rv64gc,PASS,frames=200 fnv_out=d5e90ea7fe76fa33,--enable-fixed-point
+RVV-014,dev-libs/nettle,nettle-rvv,autotools,rv64gc,PASS,2 个摘要文件逐字节一致,
+RVV-015,dev-libs/openssl,openssl-rvv,perl-Configure,rv64gc,PASS,sha256=b5c66c4d... fnv_ct=cc18494f5e673a69 fnv_gcm=277da5ef19ec13c4,
+RVV-016,dev-libs/libgcrypt,libgcrypt-rvv,autotools,rv64gc,PASS,n=65536 ver=1.12.5 sha256=8ae5324f... fnv_ct=1b61c683d7e61c03,依赖交叉 libgpg-error 1.62
+RVV-017,dev-libs/botan,botan-rvv,configure.py,rv64gc,PASS,sha256 fnv=ab0624b961d45259 aesctr n=65536 fnv=6b642726bef75efc,
+RVV-018,dev-libs/crypto++,cryptopp-rvv,make,rv64gc,PASS,sha256 fnv=ab0624b961d45259 aes256ctr=6b642726bef75efc aes256cbc=889fb3dcc628ed12,
+RVV-019,sci-libs/eigen,eigen-rvv,header-only,rv64gc,PASS,imatmul 64x64 fnv=b6934bd0094dc25a mismatch=0/4096,
+RVV-020,media-libs/zimg,zimg-rvv,meson,rv64gc,PASS,resize 96x72 fnv=63a1b96d955d6536 depth fnv=1ca7dee4e96750f5,
+RVV-021,games-board/stockfish,stockfish-rvv,make,rv64gc,PASS,depth 18 nodes 200176 bestmove b5a4 ponder g8f6,UCI 直跑
+RVV-022,sci-libs/fftw,fftw-rvv,autotools,rv64gc,PASS,dft1024 max_rel=3.112e-14 fnv=7c2af68f8fe41f90,容差 1e-6
+RVV-023,media-libs/webrtc-audio-processing,webrtc-ap-rvv,meson,rv64gc,PASS,frames=200 pcm=96000 energy=8714.207510 (native 8714.209828),容差 1e-5；自适应滤波逐字节不可达
+RVV-024,media-sound/mpg123,mpg123-rvv,autotools,rv64gc,PASS,decoded=176400 fnv_q8=d9d5b2bd265e8b8b,8bit 量化哈希一致
+RVV-025,media-libs/libaom,libaom-rvv,cmake,rv64gc,PASS,frames=5 bytes=2380 fnv_bit=240a4878e6072e89 fnv_px=714f34de78d4e4d6,官方发布包 3.3.0
+RVV-026,sci-libs/gromacs,gromacs-rvv,cmake,rv64gc,IN-PROGRESS,build 53% / 703 objects,riscv 交叉编 libgromacs 极慢（单文件数分钟），未完成
