@@ -184,6 +184,27 @@ libaom、x264、openh264、openssl。
 在编：botan。
 未上机 12：libspeex、speexdsp、nettle、libgcrypt、cryptopp、eigen、zimg、pixman、fftw、webrtc-ap、gromacs。
 
+
+## 2m. 第五批：libspeex / speexdsp / cryptopp（真机）
+
+| 包 | 测法 | 功能判定 | cpu → rvv |
+|---|---|---|---|
+| libspeex | 工程内探针 `test/speex_ab.c` 链接各自 `libspeex.a`：`gen 16000 20` → `encode wb 8` → `decode wb` | 编码码流 74000 B **md5 完全一致**；解码 raw 320000 采样逐样本比对 `max=1 LSB`，13147 个样本有差（4.1%）→ 容差内 | enc 380 → 1562 ms（**0.24x，严重回退**）；dec 54 → 93 ms（0.58x） |
+| speexdsp | 工程内探针 `test/pkg_speexdsp.c`（echo + preprocess，200 帧 256 点） | 产出 raw 文件 md5 一致，探针 FNV 指纹 `5981f53bb9be8441` 双方相同 → **bit-exact** | 48 → 49/51 ms（≈0.97x） |
+| cryptopp | `cryptest.exe v`（上游校验套件） | 两侧均 rc=0，**872 条 passed / 0 FAILED，条数完全相同** | 13.95 s → 16.14 s（0.86x） |
+
+speex 的 0.24x 是目前最严重的回退：`-march=rv64gcv` 让 GCC 把定点滤波外层循环重排，
+指令数暴涨。这条数据直接支持「下一轮必须关全局自动向量化、只对选定内核开」。
+
+## 2n. 真机进度（更新）
+
+已跑通 **15 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp。
+
+在编：botan（configure.py 方式）。
+卡点 2：libvpx（vpxenc 未产出）、stockfish（缺 NNUE 网络）。
+未上机 9：nettle、libgcrypt、eigen、zimg、pixman、fftw、webrtc-ap、gromacs。
+
 ## 3. 结论
 
 真机四包结果一览：
