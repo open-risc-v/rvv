@@ -35,9 +35,20 @@
 | 23 | webrtc-ap-rvv | meson | `frames=200 pcm=96000 energy=8714.207510`（native 8714.209828，相对差 3e-7） | 容差 1e-5 内一致（自适应滤波器逐字节不可达） |
 | 24 | mpg123-rvv | autotools（官方发布包） | `decoded=176400 fnv_q8=d9d5b2bd265e8b8b` | 8bit 量化哈希逐位一致（原件哈希因浮点末位不同） |
 | 25 | libaom-rvv | cmake（官方发布包） | `frames=5 bytes=2380 fnv_bit=240a4878e6072e89 fnv_px=714f34de78d4e4d6` | 逐位一致（码流与像素都一致） |
-| 26 | gromacs-rvv | cmake | `gmx editconf -box 5 5 5 -c` 输出结构文件 | 待填 |
+| 26 | gromacs-rvv | cmake | `gmx editconf -box 5 5 5 -c` 输出结构文件 | **未完成**：libgromacs 共 1934 个 TU，本机 4 核在沙箱下 ~3 TU/min，跑到 733 个（38%）即超时上限；命令与参数已固定，可直接续跑 |
 
 排除项（按用户指示不立项）：`sci-libs/gdal`、`sys-cluster/ceph`。
+
+## gromacs 的阻塞点（唯一未完成项）
+
+- 上游：`gitlab.com/gromacs/gromacs.git` @ `5a4f586`（可达，已拉进 `baseline/`）。
+- 依赖：`cmake>=3.28`（apt 只有 3.22，已用 `pip install --user cmake` 装 4.4.5）。
+- 配置（两侧同参数）：`-DGMX_FFT_LIBRARY=fftpack -DGMX_GPU=OFF -DGMX_OPENMP=OFF -DGMX_SIMD=None -DBUILD_SHARED_LIBS=OFF -DGMX_BUILD_UNITTESTS=OFF -DCMAKE_CXX_FLAGS_RELEASE=-O0`。
+- 探针：上游 CLI 直跑 `gmx editconf -f test/data/tiny.gro -o %OUT%/out.gro -box 5 5 5 -c`（`test/data/tiny.gro` 已入库）。
+- 实测：`-O3` 时 1%/4min；`-O1` 约 1.5%/min；`-O0` 约 3 TU/min，跑到 733/1934 TU（38%/41%）耗时约 3 小时仍未完。
+- 结论：不是编译错误，是**纯编译时长**问题。续跑命令：
+  `cd projects/gromacs-rvv && cmake --build build/riscv64-b/bld -j4`，完成后再跑
+  `PATH=$HOME/.local/bin:$PATH BUILD_SYS=cmake CLI_BIN=gmx CLI_ARGS="editconf -f test/data/tiny.gro -o %OUT%/out.gro -box 5 5 5 -c" MARCH=rv64gc ./scripts/local-cross.sh gromacs-rvv` 完成 A/B。
 
 ## 上游参照变更（有据可查）
 
