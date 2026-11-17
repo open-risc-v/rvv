@@ -198,12 +198,12 @@ speex 的 0.24x 是目前最严重的回退：`-march=rv64gcv` 让 GCC 把定点
 
 ## 2n. 真机进度（更新）
 
-已跑通 **16 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
-libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle。
+已跑通 **17 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman。
 
 在编：botan（configure.py 方式）。
 卡点 2：libvpx（vpxenc 未产出）、stockfish（缺 NNUE 网络）。
-未上机 8：libgcrypt、eigen、zimg、pixman、fftw、webrtc-ap、gromacs。
+未上机 7：libgcrypt、eigen、zimg、fftw、webrtc-ap、gromacs。
 
 
 ## 2o. nettle（真机，工程内探针）
@@ -221,6 +221,20 @@ libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle。
 sha256 摘要与 openssl 侧结果 `686d5acd…a8b6` 交叉一致，说明探针链路正确。
 两个函数都不是 RVV 收益点：nettle 的 sha2/aes 走查表与 32/64 位整型，RVVLEN 无用武之地，
 `-march=rv64gcv` 只是让 GCC 换了寄存器分配，于是 -8%。
+
+
+## 2p. pixman（真机，工程内探针）
+
+meson 构建（`-Dbuildtype=release -Ddefault_library=static -Dc_args="-march=<isa> -O2"`），
+探针 `/tmp/pixman_probe.c`：1024×1024 a8r8g8b8，200 轮 `SRC` + `OVER`（带 8 位 mask）合成，
+对结果像素取 FNV。
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| 像素指纹 | `2ddbc3f111d30b83` | **完全相同** |
+| 200 轮合成耗时 | 827 / 831 ms | 837 / 838 ms（≈0.99x） |
+
+pixman 没有 RVV fast path（上游只有 arm/x86 的 SIMD 后端），纯净的回退结论：-1%。
 
 ## 3. 结论
 
