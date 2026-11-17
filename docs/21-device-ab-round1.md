@@ -323,6 +323,25 @@ libgcrypt、zimg。
 
 剩余 4：webrtc-ap、gromacs（未上机），libvpx、stockfish（卡在构建/资源）。
 
+
+## 2v. webrtc-ap（真机，工程内探针）
+
+上游 `webrtc-audio-processing 2.1`（meson，自动拉 `abseil-cpp-20240722.0` 子项目）。
+两侧 `meson setup -Dbuildtype=release -Ddefault_library=static -Dc_args/-Dcpp_args="-march=<isa> -O2"`
++ `ninja` + `meson configure -Dprefix=/tmp/wap-<v>` + `ninja install`，再用 `pkg-config --static` 链接
+工程内探针 `test/pkg_apm.cpp`（48 kHz、10 ms 帧、200 帧，AEC + NS + AGC 全流程）。
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| PCM 指纹 `fnv_pcm` | `05ec2f7d501cd053` | **相同** |
+| 量化 8bit 指纹 `fnv_q8` | `54e5cf5c2deba658` | **相同** |
+| 输出 raw md5 | `2ef807db0308` | **相同** |
+| energy | 8714.207510 | 8714.207510 |
+| 200 帧处理 | 33 / 33 / 34 ms | 34 / 33 / 34 ms（≈1.00x） |
+
+APM 全链路 **bit-exact**（浮点也没有末位差，因为两侧是同一条 C++ 标量路径），
+性能完全持平：内部主要是 16 位定点与 float 标量运算，无 SIMD 快路可吃 RVV。
+
 ## 3. 结论
 
 真机四包结果一览：
