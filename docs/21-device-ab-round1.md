@@ -198,12 +198,12 @@ speex 的 0.24x 是目前最严重的回退：`-march=rv64gcv` 让 GCC 把定点
 
 ## 2n. 真机进度（更新）
 
-已跑通 **17 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
-libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman。
+已跑通 **18 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman、fftw。
 
 在编：botan（configure.py 方式）。
 卡点 2：libvpx（vpxenc 未产出）、stockfish（缺 NNUE 网络）。
-未上机 7：libgcrypt、eigen、zimg、fftw、webrtc-ap、gromacs。
+未上机 6：libgcrypt、eigen、zimg、webrtc-ap、gromacs。
 
 
 ## 2o. nettle（真机，工程内探针）
@@ -235,6 +235,22 @@ meson 构建（`-Dbuildtype=release -Ddefault_library=static -Dc_args="-march=<i
 | 200 轮合成耗时 | 827 / 831 ms | 837 / 838 ms（≈0.99x） |
 
 pixman 没有 RVV fast path（上游只有 arm/x86 的 SIMD 后端），纯净的回退结论：-1%。
+
+
+## 2q. fftw（真机，工程内探针）
+
+autotools 两侧静态构建（`--disable-shared --enable-static --disable-fortran --disable-doc`,
+`CFLAGS="-march=<isa> -O2"`）。探针 `/tmp/fftw_probe.c`：4096 点复数 FWD DFT，
+`FFTW_ESTIMATE`，500 次 `fftw_execute`，对输出取整后 FNV。
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| 输出指纹 | `d7a7a0a6ff1a9ec2` | **完全相同** |
+| 500 次 4096 点 DFT | 82.0 / 85.3 ms | 75.9 / 73.3 ms（**1.12x**） |
+
+这是本轮第二个真实正收益（第一个是 zlib-ng 1.42x、flac 1.50x 属同口径）。
+原因：fftw 的 codelet 是长直线循环 + 大量 `double` 载入/存回，GCC 在 `rv64gcv` 下能把它
+整段向量化；而 libspeex/libde265 那类分支密集或 16 位定点的 DSP 循环反而被拆散。
 
 ## 3. 结论
 
