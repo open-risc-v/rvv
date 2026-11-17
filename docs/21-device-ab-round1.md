@@ -299,6 +299,30 @@ botan 的 SHA-256 是本轮第二个正收益点，但同一构建下 AES 掉 26
 libgcrypt 的 AES 有 ARMv8/x86 的汇编快路，RISC-V 走纯 C + 查表；开 RVV 后 GCC 把 S-box
 查表循环重排，掉 17%。sha256 完全持平。
 
+
+## 2t. zimg（真机，工程内探针）
+
+上游快照缺 `graphengine` 子模块（`make` 报无规则可制作 `graphengine/graphengine/cpuinfo.cpp`），
+先 `git clone https://github.com/sekrit-twc/graphengine baseline/graphengine` 再
+`./autogen.sh && ./configure --disable-shared --enable-static CFLAGS/CXXFLAGS="-march=<isa> -O2"`。
+探针 `/tmp/zimg_probe.c`（C API）：1920×1080 → 1280×720 灰度 8bit，bicubic，20 次 `zimg_filter_graph_process`。
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| 输出指纹 | `6166cf2f36c491e1` | **完全相同** |
+| 20 次缩放 | 1080 / 1088 ms | **8310 / 8262 ms**（**0.13x，灾难性**） |
+
+zimg 的 SIMD 走 graphengine 的后端分派（x86 AVX2 / ARM NEON），RISC-V 上只有 scalar C；
+`-march=rv64gcv` 把这个标量重采样内核向量化成低效 gather 序列，性能掉到 1/8。
+
+## 2u. 进度校正（截至本节）
+
+**22 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、libaom、
+x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman、fftw、eigen、botan、
+libgcrypt、zimg。
+
+剩余 4：webrtc-ap、gromacs（未上机），libvpx、stockfish（卡在构建/资源）。
+
 ## 3. 结论
 
 真机四包结果一览：
