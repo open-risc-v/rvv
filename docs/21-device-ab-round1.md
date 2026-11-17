@@ -69,7 +69,25 @@ libpng 上游没有 RISC-V 内核，`-march=rv64gcv` 只是让编译器有机会
 
 结论：libwebp 上游没有手写 RVV 内核，`-march=rv64gcv` 只带来编译器自动向量化的微弱收益。
 
+## 2c. libde265：真机解码逐字节一致，rvv 略慢
+
+- 码流：`ffmpeg -f lavfi -i testsrc2=352x288 -frames:v 10 -c:v libx265` 生成 `tiny.265`（25784 字节，10 帧）
+- 两侧 `dec265 -o out.yuv`：`rc=0`，两侧 YUV 都是 1520640 字节，md5 前 16 位同为 `f4c76710ae018adf`
+- 耗时（交替 3 轮）：cpu 46/44/43 ms，rvv 50/51/49 ms → 0.88x（rvv 慢约 13%）
+
+`-march=rv64gcv` 让 GCC 自动向量化了部分内循环，但在 352×288 小帧上向量化的启动与收尾开销大于收益。
+
 ## 3. 结论
+
+真机四包结果一览：
+
+| 包 | 输入 | 功能判定 | cpu | rvv | 加速比 |
+|---|---|---|---|---|---|
+| zlib-ng | 16 MiB 文本，`minigzip -6` | 825552 B / sha256 一致 | 396 ms | 278 ms | **1.42x** |
+| zlib-ng（解压） | 同上 | 解压内容一致 | 26 ms | 32 ms | 0.81x |
+| libpng | `basn2c08.png`，`pngtest` | `pngout.png` md5 一致 | — | — | 无（上游无 RVV 内核） |
+| libwebp | 2048² 噪声，`cwebp -lossless -q 100 -m 4` | 码流 md5 一致 | 3341 ms | 3305 ms | 1.01x |
+| libde265 | `tiny.265`（352×288×10） | YUV md5 一致 | 44 ms | 50 ms | 0.88x |
 
 1. 真机链路打通：`git clone` → `fetch-upstream.sh` → 双配置构建 → 产物逐字节比对 → 计时，
    全程在设备上完成，不依赖 VM。
