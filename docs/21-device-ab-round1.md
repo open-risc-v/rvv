@@ -121,6 +121,33 @@ zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus。
 尚未上真机：libvpx、x264、openh264、libspeex、speexdsp、nettle、libgcrypt、botan、cryptopp、
 eigen、zimg、pixman、stockfish、fftw、webrtc-ap、libaom、gromacs = 17 个。
 
+
+## 2g. 第四批：libaom / x264 / openh264（真机）
+
+| 包 | 输入与命令 | 功能判定 | 耗时 |
+|---|---|---|---|
+| libaom | `aomenc --cpu-used=8 --limit=30 --cq-level=30`，输入 30 帧 512×512 y4m | 码流 94004 B，md5 一致；`aomdec` 解码 YUV 11796698 B md5 一致 | cpu 29.0 s vs rvv 32.8 s → 0.89x |
+| x264 | `x264 --crf 30 --preset veryfast`，同一 y4m | 码流 md5 一致（`0db6e36…`） | 构/测时设备仍在编 stockfish，计时作废，需空闲重测 |
+| openh264 | `h264enc /tmp/welsenc.cfg -org a30.yuv -sw 512 -sh 512` | 码流 73080 B，md5 一致；另用 `baseline/res/BA1_FT_C.264` 解码，YUV 45467136 B md5 一致 | enc 100 ms vs 120 ms（有负载干扰，仅参考） |
+
+构建系统侧的新坑（都已绕过）：
+- **libvpx**：`make CFLAGS=` 覆盖会清掉 Makefile 自带 `-I.`，必须用 `./configure --extra-cflags=...`；另外 `vpxenc/vpxdec`
+  需要 `--enable-tools`，本次仍未产出二进制（`make vpxenc` 报「没有规则」），需要手工链接
+  `vpxenc.c ivfenc.c args.c tools_common.c md5_utils.c y4menc.c` + `third_party/libyuv/include`，
+  但缺 `y4m_input_fetch_frame`（y4minput 目标库未编入），**当前状态：libvpx 编码链路未打通**。
+- **x264**：同上的 CFLAGS 覆盖问题（`input/input.h` 找不到 `x264cli.h`），改 `--extra-cflags` 后正常。
+- **stockfish**：手工 `g++ *.cpp` 会漏 `syzygy/`、`nnue/` 子目录，链接报 `Tablebases::rank_root_moves`、
+  `NNUE::Network::load` 未定义；须 `find . -name '*.cpp'`。另外 RISC-V 上默认 `-fPIE` 会触发
+  `R_RISCV_CALL_PLT ... making a shared object` 报错，要显式 `-no-pie`。
+
+## 2h. 真机进度（更新）
+
+已跑通 **11 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264。
+
+未完成 15 个：libvpx（vpxenc 链接）、stockfish（编译中）、libspeex、speexdsp、nettle、libgcrypt、
+botan、cryptopp、eigen、zimg、pixman、fftw、webrtc-ap、openssl、gromacs。
+
 ## 3. 结论
 
 真机四包结果一览：
