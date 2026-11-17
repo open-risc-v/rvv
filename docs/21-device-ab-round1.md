@@ -94,6 +94,33 @@ flac 的 1.50x 全部来自 GCC 自动向量化（上游没有 RISC-V 内核）�
 当前真机已验证 **7 / 26**：
 zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus。
 
+
+## 2e. 第三批：mpg123（真机）
+
+- 输入：`ffmpeg -i test.wav -c:a libmp3lame -b:a 128k test.mp3`（481114 B）
+- 两侧 `mpg123 -q -w out.wav`：输出 WAV 均为 5292044 B
+- **字节不同**（md5 `a75ad98f…` vs `da7b3c94…`），但逐采样比对：
+  `max_abs_diff = 1`（1 LSB），178 / 2646000 个采样有差异（6.7e-5）
+- 判定：**容差内一致**（口径同 VM：mp3 解码的 SIMD 路径允许 ±1 LSB）
+- 耗时：cpu 133/138 ms，rvv 178/173 ms → 0.78x（rvv 反而慢）
+
+## 2f. 真机进度（截至本轮）
+
+| # | 包 | 真机功能 | 加速比 |
+|---|---|---|---|
+| 1 | zlib-ng | 逐字节一致 | 压缩 1.42x / 解压 0.81x |
+| 2 | libpng | md5 一致 | — |
+| 3 | libwebp | md5 一致 | 1.01x |
+| 4 | libde265 | md5 一致 | 0.88x |
+| 5 | libjpeg-turbo | md5 一致 | 1.00x |
+| 6 | flac | md5 一致 | 1.50x |
+| 7 | opus | md5 一致 | 0.74x |
+| 8 | mpg123 | ±1 LSB 容差内 | 0.78x |
+
+累计 **8 / 26**。仍在跑：openssl（设备上后台双构建）。
+尚未上真机：libvpx、x264、openh264、libspeex、speexdsp、nettle、libgcrypt、botan、cryptopp、
+eigen、zimg、pixman、stockfish、fftw、webrtc-ap、libaom、gromacs = 17 个。
+
 ## 3. 结论
 
 真机四包结果一览：
