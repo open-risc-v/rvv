@@ -148,6 +148,23 @@ libaom、x264、openh264。
 未完成 15 个：libvpx（vpxenc 链接）、stockfish（编译中）、libspeex、speexdsp、nettle、libgcrypt、
 botan、cryptopp、eigen、zimg、pixman、fftw、webrtc-ap、openssl、gromacs。
 
+
+## 2i. stockfish 现状（未跑通）
+
+- 手工 `g++` 需排除 `src/universal/*`（x86 专用入口），并补 `-no-pie`；已完成 cpu 侧编译。
+- 但 `EvalFileDefaultName = nn-bddd9d57eb87.nnue` 对应的网络文件在 baseline 里**不存在**，
+  从 `raw.githubusercontent.com/official-stockfish/networks/master/` 取回的是 134 字节（404 内容），
+  不是真网络；引擎启动后无网可载，A/B 无法作数。
+- 结论：stockfish 卡在**网络文件获取**，不是编译问题；下一步改用 `official-stockfish/networks`
+  仓库的 LFS 直链或 `tests/inspect` 发布包，取到正确文件后再跑 `stockfish bench`。
+
+## 2j. 当前真机口径总结
+
+- 真机可跑通并给出 A/B 证据：**11 / 26**
+- 卡点 2 个：libvpx（vpxenc 未产出二进制）、stockfish（缺 NNUE 网络文件）
+- 尚未上机 13 个：libspeex、speexdsp、nettle、libgcrypt、botan、cryptopp、eigen、zimg、pixman、
+  fftw、webrtc-ap、openssl、gromacs
+
 ## 3. 结论
 
 真机四包结果一览：
