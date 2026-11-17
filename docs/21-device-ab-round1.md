@@ -198,8 +198,8 @@ speex 的 0.24x 是目前最严重的回退：`-march=rv64gcv` 让 GCC 把定点
 
 ## 2n. 真机进度（更新）
 
-已跑通 **18 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
-libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman、fftw。
+已跑通 **19 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle、pixman、fftw、eigen。
 
 在编：botan（configure.py 方式）。
 卡点 2：libvpx（vpxenc 未产出）、stockfish（缺 NNUE 网络）。
@@ -251,6 +251,33 @@ autotools 两侧静态构建（`--disable-shared --enable-static --disable-fortr
 这是本轮第二个真实正收益（第一个是 zlib-ng 1.42x、flac 1.50x 属同口径）。
 原因：fftw 的 codelet 是长直线循环 + 大量 `double` 载入/存回，GCC 在 `rv64gcv` 下能把它
 整段向量化；而 libspeex/libde265 那类分支密集或 16 位定点的 DSP 循环反而被拆散。
+
+
+## 2r. eigen / botan（真机）
+
+**eigen**（header-only，直接 `g++ -O2 -march=<isa> -I baseline probe.cpp`）
+探针：512×512 float 矩阵乘 × 20 轮，输出矩阵落盘逐元素比对。
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| 20 轮 512³ float GEMM | 1283 / 1338 ms | **48049 ms**（**0.028x，灾难性**） |
+| 元素级差异 | — | max_abs 3.05e-05，mean_abs 2.76e-06（容差内） |
+
+Eigen 3.4 没有 RVV packet 后端，`-march=rv64gcv` 只是让 GCC 向量化 Eigen 的通用 scalar
+内核，生成大量 `vrgather`/低效 mask 序列，性能掉到 1/35。这条与 libspeex 0.24x 一起，
+是本轮「全局开 RVV = 灾难」的最强证据。
+
+**botan**（上游无 CMakeLists.txt，改用 `configure.py --disable-shared --without-documentation
+--extra-cxxflags="-march=<isa> -O2"` + `make -j6`，二进制 `bld-<v>/botan`）
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| `botan hash --algo=SHA-256` | `686D5ACD…43C2E8B6` | **完全相同**（与 openssl/nettle 交叉一致） |
+| SHA-256 吞吐（1024 B buf） | 73.8 / 75.2 MiB/s | 92.0 / 92.1 MiB/s（**1.23x**） |
+| AES-256 加密吞吐 | 34.8 / 35.6 MiB/s | 26.4 / 25.9 MiB/s（**0.74x**） |
+
+botan 的 SHA-256 是本轮第二个正收益点，但同一构建下 AES 掉 26%——说明「整包开 RVV」同一份
+代码里既有赚也有赔，必须按内核粒度开关。
 
 ## 3. 结论
 
