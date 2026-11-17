@@ -198,12 +198,29 @@ speex 的 0.24x 是目前最严重的回退：`-march=rv64gcv` 让 GCC 把定点
 
 ## 2n. 真机进度（更新）
 
-已跑通 **15 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
-libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp。
+已跑通 **16 / 26**：zlib-ng、libpng、libwebp、libde265、libjpeg-turbo、flac、opus、mpg123、
+libaom、x264、openh264、openssl、libspeex、speexdsp、cryptopp、nettle。
 
 在编：botan（configure.py 方式）。
 卡点 2：libvpx（vpxenc 未产出）、stockfish（缺 NNUE 网络）。
-未上机 9：nettle、libgcrypt、eigen、zimg、pixman、fftw、webrtc-ap、gromacs。
+未上机 8：libgcrypt、eigen、zimg、pixman、fftw、webrtc-ap、gromacs。
+
+
+## 2o. nettle（真机，工程内探针）
+
+上游 `nettle-3.10` 的 tools（`nettle-hash`）依赖 gmp 未生成，故用自写探针
+`/tmp/nettle_probe.c` 链接两侧 `libnettle.a`（`gcc -O2 -march=<isa> -I bs-<v> probe.c bs-<v>/libnettle.a`）：
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| SHA-256（16 MiB × 8 轮） | `686d5acd68f37ef0…43c2e8b6` | **完全相同** |
+| AES-256 链式加密指纹（1048576 块） | `db4e3b95b6168728` | **完全相同** |
+| sha256 8 轮耗时 | 1189 / 1188 ms | 1288 / 1287 ms（**0.92x**） |
+| aes 1M 块耗时 | 243 / 243 ms | 242 / 240 ms（≈1.01x） |
+
+sha256 摘要与 openssl 侧结果 `686d5acd…a8b6` 交叉一致，说明探针链路正确。
+两个函数都不是 RVV 收益点：nettle 的 sha2/aes 走查表与 32/64 位整型，RVVLEN 无用武之地，
+`-march=rv64gcv` 只是让 GCC 换了寄存器分配，于是 -8%。
 
 ## 3. 结论
 
