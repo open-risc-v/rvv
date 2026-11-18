@@ -342,6 +342,25 @@ libgcrypt、zimg。
 APM 全链路 **bit-exact**（浮点也没有末位差，因为两侧是同一条 C++ 标量路径），
 性能完全持平：内部主要是 16 位定点与 float 标量运算，无 SIMD 快路可吃 RVV。
 
+
+## 2w. stockfish（真机，bench 1 1 9）
+
+上游快照**没有 CMakeLists.txt**（cmake 直接报错），走 `src/Makefile` 双架构构建，NNUE 网络
+从 `https://data.stockfishchess.org/nn/nn-bddd9d57eb87.nnue` 取得（138,360,528 B，放进源码目录）。
+
+| 项 | cpu | rvv |
+|---|---|---|
+| 构建 | `make build ARCH=riscv64 COMP=gcc`（默认 `-march=rv64gc`，无 `USE_RVV`） | `make build ARCH=riscv64-rva23 COMP=gcc`（`-march=rv64gcv1p0_zba_zbb_zbs_zicbop_zicond` + `-DUSE_RVV`） |
+| `bench 1 1 9` 第 1 轮 | 30415 ms | **961 ms** |
+| 第 2 轮 | 30681 ms | **953 ms** |
+| Nodes searched | 211053 | **211053（完全相同）** |
+| 比值 | — | **≈31.8x 正收益** |
+
+判据说明：`bench` 是确定性搜索，两侧 `Nodes searched` 完全一致（211053），说明**搜索树与
+估值结果逐节点等价**；耗时差异全部来自 RVV 化的 NNUE 前向计算（`USE_RVV` 分支）。
+口径说明：`ARCH=riscv64` vs `ARCH=riscv64-rva23` 不只差 ISA flag，还会打开 `USE_RVV`
+预处理器分支——这正是本包要测的"RVV 加速是否生效"，不能当作纯 `-march` 对照来看。
+
 ## 3. 结论
 
 真机四包结果一览：
