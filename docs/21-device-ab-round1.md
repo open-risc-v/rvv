@@ -361,6 +361,28 @@ APM 全链路 **bit-exact**（浮点也没有末位差，因为两侧是同一�
 口径说明：`ARCH=riscv64` vs `ARCH=riscv64-rva23` 不只差 ISA flag，还会打开 `USE_RVV`
 预处理器分支——这正是本包要测的"RVV 加速是否生效"，不能当作纯 `-march` 对照来看。
 
+
+## 2x. gromacs（真机，SPC 水盒 MD）
+
+两侧 cmake Release 构建（`-DGMX_MPI=OFF -DGMX_GPU=OFF -DGMX_DOUBLE=OFF -DGMX_FFT_LIBRARY=fftpack`，
+`CMAKE_C_FLAGS/CMAKE_CXX_FLAGS="-march=<isa> -O2"`）都成功。
+
+输入：用 `share/top/spc216.gro` 经 `gmx solvate -box 2.5 2.5 2.5` 生成 510 个 SPC 水分子（1530 原子），
+`gromos53a6.ff` 力场 + `run.mdp`（md、dt 0.002、1000 步、PME、rcoulomb/rvdw 0.9、h-bonds 约束、
+无 tcoupl/pcoupl）。**两侧共用同一个 `topol.tpr`**（同一输入，排除输入差异）。
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| 第 0 步单点势能 | 4578.960938 | **4578.960938（完全相同）** |
+| 1000 步 `mdrun -nt 1` 第 1 轮 | 15205 ms | 15271 ms |
+| 第 2 轮 | 15224 ms | 15374 ms |
+| 比值 | — | **≈0.99x（基本持平）** |
+
+判据说明：**第 0 步单点势能逐位相同**证明力场/PME 计算路径等价；1000 步后 `md.edr` 必然不同
+（MD 是混沌系统，末位差会被指数放大，末步势能 −6208.36 vs −5903.16），**不能拿轨迹末态当判据**。
+性能持平的原因是 gromacs 这份快照没有 RVV 内核，`rv64gcv` 只是给编译器更多自动向量化余地，
+而 PME/邻居搜索的瓶颈在缓存与间接寻址。
+
 ## 3. 结论
 
 真机四包结果一览：
