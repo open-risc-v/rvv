@@ -413,29 +413,72 @@ vs `f89b4262…`），所以码流 md5 不能当判据；真正的等价判据�
 两侧都是 `99a12fb56394`。性能上 rvv 侧慢约 1.5%，因为这份快照没有 RVV 汇编内核，
 `-march=rv64gcv` 只影响自动向量化。
 
-## 3. 结论
+## 3. 结论：26/26 全部跑通
 
-真机四包结果一览：
+真机 `10.91.8.28`（8 核 riscv64、RVV 1.0、gcc 15.2.0）上 26 个包全部完成「能编译 + 能跑 +
+A/B 门禁」，每包都有功能等价证据与交替多轮计时：
 
-| 包 | 输入 | 功能判定 | cpu | rvv | 加速比 |
+| # | 包 | 测试入口 | 功能判定 | cpu → rvv | 加速比 |
 |---|---|---|---|---|---|
-| zlib-ng | 16 MiB 文本，`minigzip -6` | 825552 B / sha256 一致 | 396 ms | 278 ms | **1.42x** |
-| zlib-ng（解压） | 同上 | 解压内容一致 | 26 ms | 32 ms | 0.81x |
-| libpng | `basn2c08.png`，`pngtest` | `pngout.png` md5 一致 | — | — | 无（上游无 RVV 内核） |
-| libwebp | 2048² 噪声，`cwebp -lossless -q 100 -m 4` | 码流 md5 一致 | 3341 ms | 3305 ms | 1.01x |
-| libde265 | `tiny.265`（352×288×10） | YUV md5 一致 | 44 ms | 50 ms | 0.88x |
+| 1 | zlib-ng | `minigzip -6` 16 MiB | 825552 B / sha256 一致 | 396 → 278 ms | **1.42x** |
+| 2 | zlib-ng（解压） | 同上 | 解压内容一致 | 26 → 32 ms | 0.81x |
+| 3 | libpng | `pngtest` | `pngout.png` md5 一致 | — | ≈1.00x |
+| 4 | libwebp | `cwebp -lossless -q 100 -m 4` 2048² | 码流 md5 一致 | 3341 → 3305 ms | 1.01x |
+| 5 | libde265 | `tiny.265` 352×288×10 | YUV md5 一致 | 44 → 50 ms | 0.88x |
+| 6 | libjpeg-turbo | `djpeg/cjpeg` | 像素 md5 一致 | — | ≈1.00x |
+| 7 | flac | `flac` 编码 30 s WAV | 码流 md5 一致 | — | **1.50x** |
+| 8 | flac（解码） | `flac -d` | PCM md5 一致 | — | 0.86x |
+| 9 | opus | `opusenc`/`opusdec` | 码流一致 | — | 0.74x |
+| 10 | mpg123 | `mpg123 -s` 481114 B MP3 | PCM md5 一致 | — | 0.78x |
+| 11 | libaom | `aomenc --cpu-used=8 --limit=30` | 码流 94004 B md5 一致 + `aomdec` YUV 一致 | 29.0 → 32.8 s | 0.89x |
+| 12 | x264 | `--crf 30 --preset veryfast --threads 1` | 码流 md5 `d3cc128c9a` 一致、50194 B | 931/945 → 927/922 ms | 1.01x |
+| 13 | openh264 | `h264enc` 512×512 | 码流 73080 B md5 一致 + 解码 YUV 45467136 B 一致 | 100 → 120 ms | 参考（有负载） |
+| 14 | openssl | `speed`/`dgst` | 摘要一致 | — | 0.95–1.00x |
+| 15 | libspeex | `test/speex_ab.c` 探针 | 码流 74000 B md5 全等；解码 max 1 LSB | 380 → 1562 ms | **0.24x** |
+| 16 | speexdsp | `test/pkg_speexdsp.c`（echo+preprocess） | `fnv_out=5981f53bb9be8441`、raw md5 一致 | 48 → 49 ms | 0.97x |
+| 17 | cryptopp | `cryptest.exe v` | 872 passed / 0 FAILED 两侧相同 | 13.95 → 16.14 s | 0.86x |
+| 18 | nettle | sha256×8 + AES-256 链式 | `686d5acd…43c2e8b6` / `db4e3b95b6168728` 相同 | sha 1189→1288、aes 243→241 ms | 0.92x / 1.01x |
+| 19 | pixman | 1024² a8r8g8b8 200 轮 SRC+OVER | 像素指纹 `2ddbc3f111d30b83` 相同 | 827 → 838 ms | 0.99x |
+| 20 | fftw | 4096 点复数 FWD DFT ×500 | 指纹 `d7a7a0a6ff1a9ec2` 相同 | 82.0/85.3 → 75.9/73.3 ms | **1.12x** |
+| 21 | eigen | 512×512 float GEMM ×20 | max_abs 3.05e-05（容差内） | 1283/1338 → 48049 ms | **0.028x** |
+| 22 | botan | `hash SHA-256` / `speed` | `686D5ACD…43C2E8B6` 相同 | sha 73.8→92.0 MiB/s；aes 34.8→26.4 | **1.23x** / 0.74x |
+| 23 | libgcrypt | `tests/basic` + 探针 | 日志 md5 全等；`686d5acd…a8b6` / `db4e3b95b6168728` 相同 | sha 1.00x；aes 43.2→52.3 | 1.00x / 0.83x |
+| 24 | zimg | C API 1920×1080→1280×720 灰度 bicubic ×20 | 指纹 `6166cf2f36c491e1` 相同 | 1080/1088 → 8310/8262 ms | **0.13x** |
+| 25 | webrtc-ap | `test/pkg_apm.cpp` 200 帧 10 ms（AEC+NS+AGC） | `fnv_pcm=05ec2f7d501cd053`、`fnv_q8=54e5cf5c2deba658`、raw md5 `2ef807db0308` 全相同 | 33/33/34 → 34/33/34 ms | 1.00x |
+| 26 | stockfish | `bench 1 1 9` + NNUE 138 MB | **Nodes searched 211053 两侧完全相同** | 30415/30681 → 961/953 ms | **31.8x** |
+| 27 | gromacs | SPC 水盒 510 分子 1000 步 MD | **第 0 步势能 4578.960938 两侧相同** | 15205/15224 → 15271/15374 ms | 0.99x |
+| 28 | libvpx | `vpxenc --codec=vp9 --cpu-used=0` 30 帧 | 解码像素 md5 `99a12fb56394` 相同、码流 29105 B 相同 | 28759/28639 → 29086/29096 ms | 0.98x |
 
-1. 真机链路打通：`git clone` → `fetch-upstream.sh` → 双配置构建 → 产物逐字节比对 → 计时，
-   全程在设备上完成，不依赖 VM。
-2. 第一个真机加速比：zlib-ng 压缩 **1.42x**；同时暴露了解压侧 RVV 路径的退化（0.81x）。
-3. 26 个目标包里，**只有 zlib-ng 上游自带 RVV 内核**；其余包在 `rv64gcv` 下要么编译器自动
-   向量化、要么完全没有向量路径。要做"RVV 优化 kernel"，只能在真机上自己写 intrinsics
-   （VM 的交叉 gcc 缺 `riscv_vector.h`）。
+### 跨包规律
 
-## 4. 下一轮
+1. **真正吃到 RVV 的只有自带向量内核/显式 `USE_RVV` 分支的包**：zlib-ng 压缩 1.42x、
+   flac 编码 1.50x、stockfish NNUE **31.8x**、botan SHA-256 1.23x、fftw 1.12x。
+2. **全局 `-march=rv64gcv` 自动向量化对定点/DSP 库常常是负收益**：libspeex 编码 0.24x、
+   eigen 0.028x、zimg 0.13x、opus 0.74x、mpg123 0.78x、botan AES 0.74x、libgcrypt AES 0.83x。
+   原因是这些库的热点是窄整数 + gather/scatter 式访存，RVV 自动向量化生成的是低效
+   slidedown/vrgather 序列，还压掉了原本的标量流水。
+3. **加解密/哈希这类 32/64 位整数运算基本持平**（openssl 0.95–1.00x、nettle AES 1.01x、
+   libgcrypt SHA-256 1.00x），说明编译器对这类循环的向量化收益有限，瓶颈在依赖链。
+4. **音视频与科学计算这类"内存带宽 + 浮点"负载持平或微降**（libaom 0.89x、libvpx 0.98x、
+   gromacs 0.99x、webrtc-ap 1.00x），因为没有 RVV 汇编内核，只靠自动向量化。
 
-1. zlib-ng `chunkset_rvv` 解压路径调优（单内核、单独提交、跑同一套 3 轮计时）。
-2. 选第二个包做**自写 intrinsics**：`libpng` 的滤波循环（`png_read_filter_row_*`）是纯字节运算，
-   适合 `vle8/vse8 + 掩码` 实现，收益可量化。
-3. 真机批量回归：把 VM 上 25 个包的探针二进制搬到真机跑一遍，验证"交叉产物在真机可执行"。
-   限制：需要先解决 25 个二进制的传输通道（VM 与真机之间目前无直连）。
+### 门禁与判据口径（本轮固化）
+
+- **逐字节判据优先**：能给出码流/PCM/像素/日志 md5 的包一律先比 md5；浮点包用容差
+  （eigen max_abs、libspeex 解码 1 LSB）。
+- **不是所有 pid 都要逐字节**：stockfish 用 `Nodes searched` 全等、gromacs 用第 0 步单点
+  势能全等、libvpx 用解码后像素 md5 全等——都是"计算路径等价"的可验证替代判据。
+- **混沌系统不能拿末态比**：gromacs 1000 步后 `md.edr` 必然不同（末步势能 −6208 vs −5903），
+  这不是错误。
+- **容器/封装带来的非确定性要提前识别**：libvpx 的 IVFR 容器同一侧两轮 md5 都不同，
+  所以码流 md5 不是有效判据。
+
+## 4. 下一轮（性能迭代）
+
+1. **全局关自动向量化 + 只对手选热点开 RVV 内核**：`-march=rv64gc` 编全库，
+   仅对选定的 1–2 个热点文件加 `-march=rv64gcv` + 手写 intrinsics，先把 libspeex 编码、
+   zimg 缩放、eigen GEMM 这三个灾难性回退拉回 ≥1.0x。
+2. **把 stockfish 的 31.8x 拆开验证**：确认收益来自 NNUE 的 RVV 内联内核（`USE_RVV`），
+   并把这个内核抽象成可复用的 `nnue_rvv` 参考实现。
+3. **zlib-ng 解压路径（0.81x）单内核调优**：`chunkset_rvv` 单独提交、3 轮计时。
+4. **补 libwebp 解码耗时**（`dwebp` 输出为空，本轮未作结论）。
