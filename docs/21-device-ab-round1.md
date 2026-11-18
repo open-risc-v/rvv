@@ -482,3 +482,42 @@ A/B 门禁」，每包都有功能等价证据与交替多轮计时：
    并把这个内核抽象成可复用的 `nnue_rvv` 参考实现。
 3. **zlib-ng 解压路径（0.81x）单内核调优**：`chunkset_rvv` 单独提交、3 轮计时。
 4. **补 libwebp 解码耗时**（`dwebp` 输出为空，本轮未作结论）。
+
+## 5. 第二轮策略验证：全局关自动向量化（已完成两组对照）
+
+第一轮结论指向「全局 `-march=rv64gcv` 自动向量化常为负收益」。本轮直接在真机上做了三变体
+对照（`cpu` / `rvv` / `rvv-novec`，`rvv-novec` = `-march=rv64gcv -O2 -fno-tree-vectorize`），
+验证"关掉自动向量化"能否把回退拉回来。
+
+### 5.1 eigen（512×512 float GEMM ×20，头文件库）
+
+| 变体 | 第 1 轮 | 第 2 轮 | 输出指纹 |
+|---|---|---|---|
+| cpu `-march=rv64gc -O2` | 1381 ms | 1361 ms | `a8af3bd3b37e` |
+| rvv `-march=rv64gcv -O2` | **48263 ms** | 48130 ms | （0.028x，灾难） |
+| rvv-novec `-march=rv64gcv -O2 -fno-tree-vectorize` | **1266 ms** | 1267 ms | `a8af3bd3b37e`（与 cpu 相同） |
+
+结论：关掉自动向量化后 **1266 ms vs cpu 1381 ms → 1.09x**，而且输出与 cpu 侧**逐字节相同**。
+RVV 版慢 38 倍完全是 gcc 把 Eigen 3.4 的标量 GEMM 内核向量化成了 slidedown/vrgather 序列。
+
+### 5.2 mpg123（`-q -s` 解码 481114 B MP3，输出 5,292,000 B PCM）
+
+| 变体 | 第 1 轮 | 第 2 轮 | PCM md5 |
+|---|---|---|---|
+| cpu | 131 ms | 134 ms | `58aeeb096a90` |
+| rvv | 170 ms | 173 ms | `605c6de7ed9b`（**与 cpu 不同**） |
+| rvv-novec | **129 ms** | 132 ms | **`58aeeb096a90`（与 cpu 相同）** |
+
+结论更有价值：`-march=rv64gcv` 不仅让 mpg123 慢 0.77x，还**改变了 PCM 输出**（合成滤波器
+的浮点舍入被重组）；关掉自动向量化后**速度回到 1.01x 且 PCM 与 cpu 逐字节一致**。
+这也修正了第一轮"mpg123 PCM md5 一致"的记录——一致的前提是当时没开 `rv64gcv` 自动向量化。
+
+### 5.3 本轮确立的策略
+
+1. **默认编译口径改为 `-march=rv64gc -O2`（全局关 RVV）**，只在确认为热点的单文件上加
+   `-march=rv64gcv`，并优先手写 intrinsics 或使用上游自带的 RVV 内核。
+2. **A/B 门禁要加"输出等价"这一条**：自动向量化可能改浮点结果（mpg123 已实证），
+   等价判据不能只看耗时。
+3. **下一批验证目标**：libspeex 编码（0.24x）、zimg（0.13x）、opus（0.74x）、
+   botan AES（0.74x）、libgcrypt AES（0.83x）——按同一三变体口径重测，先看能否直接消除回退，
+   再决定是否值得写内核。
