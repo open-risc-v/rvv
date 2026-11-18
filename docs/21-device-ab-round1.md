@@ -383,6 +383,36 @@ APM 全链路 **bit-exact**（浮点也没有末位差，因为两侧是同一�
 性能持平的原因是 gromacs 这份快照没有 RVV 内核，`rv64gcv` 只是给编译器更多自动向量化余地，
 而 PME/邻居搜索的瓶颈在缓存与间接寻址。
 
+
+## 2y. libvpx（真机，vpxenc VP9 编码）
+
+**关键坑（此前一直卡住的总根因）**：这份快照的 `configure` 不认 `--target=riscv64-linux-gcc`，
+直接报 `Unrecognized toolchain 'riscv64-linux-gcc'` 并退出——**根本没生成 `vpx_config.h` 和
+`Makefile`**，所以后面所有 `make`、`make vpxenc` 都落在空目录/内置规则上，报 `./vpx_config.h`
+找不到。正解是 `--target=generic-gnu` 配 `CC/CXX/LD/AR`：
+
+```
+CC=gcc CXX=g++ LD=gcc AR=ar ./configure --target=generic-gnu --enable-vp8 --enable-vp9 \
+  --enable-vp9-highbitdepth --enable-examples --extra-cflags="-march=<isa> -O2"
+```
+
+两侧 configure rc=0、`vpx_config.h` 生成、`make -j6` rc=0，均产出 `vpxenc`。
+
+输入 `a30.y4m`（30 帧 512×512，11,796,718 B），`--codec=vp9 --cpu-used=0 --threads=1`：
+
+| 项 | cpu (rv64gc) | rvv (rv64gcv) |
+|---|---|---|
+| 第 1 轮编码 | 28759 ms | 29086 ms |
+| 第 2 轮编码 | 28639 ms | 29096 ms |
+| 码流大小 | 29105 B | 29105 B（相同） |
+| 解码后 YUV md5（ffmpeg 解 IVF） | `99a12fb56394` | **`99a12fb56394`（相同，11,796,480 B）** |
+| 比值 | — | **≈0.98x** |
+
+判据说明：`vpxenc` 输出的 IVFR 容器含非确定性字段，**同一侧两轮 md5 也不同**（`556f5ea3…`
+vs `f89b4262…`），所以码流 md5 不能当判据；真正的等价判据是**解码后像素 md5 相同**，
+两侧都是 `99a12fb56394`。性能上 rvv 侧慢约 1.5%，因为这份快照没有 RVV 汇编内核，
+`-march=rv64gcv` 只影响自动向量化。
+
 ## 3. 结论
 
 真机四包结果一览：
