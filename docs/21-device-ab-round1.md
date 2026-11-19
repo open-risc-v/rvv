@@ -835,12 +835,12 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 | webrtc-ap | **PASS** | 2 用例逐字节一致 |
 | zlib-ng | **PASS** | 2 用例逐字节一致 |
 | stockfish | **PASS** | 1 用例逐字节一致（上游 NNUE RVV） |
-| libvpx | **FAIL（编译）** | `pkg` 目标编译失败，早先的 variance/SSD 内核在本环境没有编进去 |
+| libvpx | **PASS** | `src/` 缺上游 `build/make/`（被 `.gitignore` 的 `build/` 规则吞掉），`rsync --ignore-existing baseline/ src/` 补齐后 A/B 全绿（`009ab00`） |
 | mpg123 | **FAIL（缺头文件）** | `mpg123.h: 没有那个文件或目录` —— 门禁要求上游先安装到 `PKG_PREFIX`，本环境没做这一步 |
 | speexdsp | **FAIL（缺头文件）** | `speex/speex_echo.h` 同上 |
 | gromacs | **FAIL（配置）** | `GMXRC.cmakein` / `GMXRC.bash.cmakein` 缺失（baseline 上游不完整） |
 | nettle | **FAIL（运行）** | `nettle-hash` A 侧运行失败（本轮的 ChaCha 内核已撤，需重查 hash 路径） |
-| libaom | **FAIL（不一致）** | `01_aom_roundtrip` 产出不一致，需先分辨是浮点编译差异还是内核错 |
+| libaom | **FAIL（版本不一致）** | 四侧对照定点：A(src+gcv+内核)=2683 B、A2(src+gcv 关内核)=2683、A3(src+gcv 关全自动向量化)=2683，而 B2(baseline+gc 关向量化)=2380、B3(baseline+gcv)=2380。**结论：差异来自 src 与 baseline 不是同一版 libaom**（`diff -rq` 显示 `aom/*.h` 大面积不同、`src/aom/aom_ext_ratectrl.h` 只在 src 存在），与内核无关；需按 9.1 口径用与 src 同版本树重建 baseline 后再测 |
 
 18 个包门禁绿，6 个包待修（原因已定位到具体报错，见上表）。
 
