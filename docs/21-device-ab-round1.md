@@ -577,3 +577,54 @@ botan 这一组给出了反面证据：**SHA-256 的 1.25x 恰恰来自自动向
    `botan/lib/block/aes` 之外的 SHA 目录、zlib-ng 的 adler/chunkset 等），逐文件验证；
 3. 每加一个文件都跑一遍"功能等价 + 计时"双向门禁——自动向量化会静默改浮点结果，
    只看速度会把错误放过去。
+
+## 6. 环境口径修正：为什么 libspeex 从 "1.47–2.20x" 变成过 "0.24x"
+
+### 6.1 差因
+
+第二轮三变体里的 `rvv` 一档，实际编的是 **`baseline/`（上游原树）+ `-march=rv64gcv`**，
+而不是工程的移植树 `src/`。libspeex-rvv 的自带内核在 `src/libspeex/rvv/`（8 个头文件：
+`vq_rvv.h`、`filters_rvv.h`、`ltp_rvv.h`、`lsp_rvv.h`、`interp_pitch_rvv.h`、
+`cb_search_rvv.h`、`math_rvv.h`、`rvv_arch.h`），只有同时满足
+
+- `-D_USE_RVV=ON`（根 `CMakeLists.txt` 才追加 `-march=${RVV_MARCH}`），
+- `-DRVV_KERNELS=ON`（写 `_USE_RVV` 宏，模块 `.c` 里的 `#elif defined(_USE_RVV)` 分支才会
+  引入 `rvv/<module>_rvv.h`），
+
+内核才参与编译。只给上游树加 `-march=rv64gcv`，等于**拿上游去和"gcc 自动向量化"比**，
+所以测出来的是自动向量化的 0.24x 事故，不是移植成果。
+
+### 6.2 按工程口径重测（真机 / gcc 15.2）
+
+A = `src/` + `_USE_RVV=ON + RVV_KERNELS=ON + RVV_MARCH=rv64gcv`；
+B = `baseline/` + `-O2 -march=rv64gc`；`bench_e2e <mode> <q> 4 5`（4 秒信号、5 次取最优）。
+
+| 模式 | 质量 | A 编码 us/帧 | B 编码 us/帧 | 编码加速 | A 解码 | B 解码 | 解码加速 |
+|---|---|---|---|---|---|---|---|
+| nb | 2 | 69.07 | 101.69 | **1.47x** | 15.72 | 14.96 | 0.95x |
+| nb | 8 | 92.24 | 147.43 | **1.60x** | 16.34 | 15.52 | 0.96x |
+| wb | 2 | 94.26 | 135.25 | **1.44x** | 23.51 | 35.59 | **1.51x** |
+| wb | 8 | 174.77 | 384.66 | **2.20x** | 25.48 | 37.73 | **1.48x** |
+| uwb | 2 | 129.03 | 196.50 | **1.52x** | 35.88 | 74.77 | **2.08x** |
+| uwb | 8 | 208.39 | 440.31 | **2.11x** | 37.62 | 76.16 | **2.03x** |
+
+位精确门禁（`CMAKE_ARGS='-D_USE_RVV=ON -DRVV_KERNELS=ON' bash test/run_ab.sh`）：
+**nb/wb/uwb × q2/q8 六档 ALL PASS**，含交叉解码。
+
+### 6.3 与文档里 "3x" 的差距
+
+`docs/perf-log.md` 最终矩阵是 enc −38.2~−63.9%（≈2.6–2.8x）、dec −23.7~−60.6%，
+出自第 33 轮的 R32 构建。**这份源码不在当前仓库也不在这台机器上**：本仓库 `src/`
+只有 8 个内核头（对应第 1–11 轮前后的集合），`qmf_decomp_rvv` / `qmf_synth_rvv`
+（第 10–11 轮、第 29–32 轮）、`multicomb` 尾部（第 8 轮）、`compute_rms16`、
+`pitch_gain_search_3tap_vq`（第 13 轮）等均已缺失。所以现在量到的是"第 11 轮前后"的
+形态（1.44–2.20x），不是 R32 的 2.8x。
+
+### 6.4 待办
+
+1. 按 `perf-log` 的行号与结论逐项补回缺的内核（优先 `qmf_decomp`、`compute_rms16`、
+   `multicomb` 尾部、`pitch_gain_search_3tap_vq`），每补一项跑 `run_ab.sh` + `bench_e2e`；
+2. `nb` 解码 0.95–0.96x 是**真回退**（短帧下内核启动开销占比高），列为待查项：
+   给 nb 的 `filters/ltp` 加长度阈值，短帧回落标量路径；
+3. 本轮确立的 A/B 口径（A=`src`+内核、B=`baseline`+`rv64gc`）作为**所有工程的基础口径**，
+   下面第 7 节据此重新定性其余 25 个包。
