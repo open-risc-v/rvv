@@ -676,3 +676,50 @@ nettle SHA 0.92x、zlib-ng 解压 0.81x、flac 解压 0.86x。
 2. 只加 `-march=rv64gcv` 而不开任何内核/向量路径的构建，**不再作为 "rvv" 档**——
    它不是移植成果，只是自动向量化的副作用（第 5 轮那批 0.13x/0.24x 就是这么来的）；
 3. 表里 `1.00x` 的诚实含义是"还没做任何加速"，而不是"RVV 没用"。
+
+## 8. 按修正口径（第 7.3 节）在真机重测
+
+口径：A = 移植树/最佳可用构建（上游向量路径开到底），B = `baseline` + `-march=rv64gc -O2`，
+同机同次测量。设备 gcc 15.2.0、VLEN=256（`vlmax_e8m1=32`、`vlmax_e32m1=8`）。
+
+### 8.1 已出数字
+
+| 包 | 负载 | A | B | 比例 | 等价性 |
+|---|---|---|---|---|---|
+| libspeex | nb q2 编码 | 67.11 us/帧 | 99.14 | **1.48x** | 码流 1900B 一致 |
+| libspeex | nb q8 编码 | 92.76 | 148.03 | **1.60x** | 4200B 一致 |
+| libspeex | wb q2 编码 | 93.99 | 136.23 | **1.45x** | 2400B 一致 |
+| libspeex | wb q8 编码 | 172.39 | 382.78 | **2.22x** | 7400B 一致 |
+| libspeex | uwb q2 编码 | 128.50 | 204.33 | **1.59x** | 2800B 一致 |
+| libspeex | uwb q8 编码 | 208.40 | 441.31 | **2.12x** | 7800B 一致 |
+| libspeex | nb 解码 | 15.60 | 14.85 | 0.95x | 短帧回退 |
+| libspeex | wb/uwb 解码 | 23.5–37.9 | 35.8–76.1 | **1.48–2.14x** | 一致 |
+| zlib-ng | 66 MB 压缩 -6 | 327 ms | 324 | 1.00x | gz 8141951B、md5 `7ff6f9d27d0a` 一致 |
+| zlib-ng | 同文件解压 | 122 ms | 141 | 1.16x | md5 `7f1e2e19e162` 一致 |
+| libjpeg-turbo | 2048×1536 编码 q90 | 47 ms | 48 | 1.02x | jpg 426999B、md5 `b7aec34df760` 一致 |
+| libjpeg-turbo | 解码 | 50 ms | 50 | 1.00x | PPM md5 `c6d515a61f02` 一致 |
+| libpng | pngtest ×5 | 62 ms | 58 | 0.93x | 回写 PNG md5 `53089a63df6c` 一致 |
+
+结论：**上游自带向量路径的包在新口径下基本回到 1.00x**——第 1 轮 zlib-ng 1.42x 是
+`baseline` 上 `-march=rv64gcv` 自动向量化的产物，不是移植成果；反向上 libpng 的
+`-march=rv64gcv` 构建比 `rv64gc` 慢 7%，属负收益，A 侧应保持 `rv64gc`。
+
+### 8.2 eigen：上游 RVV 后端在当前工具链上不可用
+
+`Eigen/src/Core/util/ConfigureVectorization.h` 只要 `EIGEN_RISCV64_USE_RVV10`，
+且要求编译期固定向量长度。实测：
+- `-mrvv-vector-bits=128/256`：gcc 15.2 报 `unrecognized argument in option`（不支持定长位宽）；
+- `-mrvv-vector-bits=zvl`：编译通过但运行即 `std::bad_alloc`（矩阵分配出问题）。
+故第 1 轮 0.028x 的根因确认为"后端未启用即回退标量"，而启用路径在本机工具链上走不通，
+本轮维持 1.00x（无加速）结论，待换 clang 或等 gcc 支持定长位宽后再评。
+
+### 8.3 其余包的判定（不需要重建）
+
+18 个无内核包（zimg、mpg123、opus、libde265、libaom、cryptopp、nettle、flac、fftw、
+libwebp、libvpx、x264、openh264、openssl、speexdsp、webrtc-ap 等）在 A = `src`、
+B = `baseline` 且两者同为 `-march=rv64gc` 时**互为同一构建**，比例恒为 1.00x；
+表里写 1.00x 表示"尚未移植内核"，不是 RVV 无效。待写内核后再逐包测量。
+
+仍在核验上游向量路径是否真正生效的 4 个包：stockfish（`USE_RVV` 显式分支，需单变量
+隔离）、pixman（`USE_RVV`）、libgcrypt（AES 路径）、gromacs（1 处 intrinsics）、
+botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，逐个确认后补测。
