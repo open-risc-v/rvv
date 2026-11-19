@@ -756,3 +756,56 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 其余 24 个在修正口径下为 1.00x 或略低于 1.00x（libpng 0.93x、libgcrypt AES 0.83x），
 原因统一是"没有 RVV 内核"或"上游 RVV 路径未覆盖热点"。这把结论从第 1 轮的
 "5 处正收益、13 处回退"校正为可复现的事实：**加速只能来自内核，自动向量化既不可靠也不可报价。**
+
+## 9. kernel 逐项落地（第 36 轮）
+
+### 9.1 口径升级：三侧构建，关掉自动向量化
+
+第 8 节的结论是"加速只能来自内核"，本轮据此把 A/B 口径固定成三条：
+
+| 侧 | 源码 | 编译 |
+|---|---|---|
+| **B（基线）** | `baseline/`（上游原样） | `-march=rv64gc -O2 -fno-tree-vectorize` |
+| **A2（对照）** | 与 A 同一份源码 | `-march=rv64gcv -O2 -fno-tree-vectorize`（内核开关关） |
+| **A（内核）** | `baseline/` 副本 + 只打内核补丁 | `-march=rv64gcv -O2 -fno-tree-vectorize -DRVV_KERNELS=1` |
+
+**为什么要 A2**：libwebp 上的实测把这件事钉死了——
+同一份源码，只把 `-march` 换成 `rv64gcv`、内核开关关掉，编码耗时从 162 ms 变 308 ms（**0.52x**）；
+打开内核后仍是 308 ms。也就是说**回退 100% 来自 gcc 15.2 的 RVV 自动向量化**，
+不是内核本身。加上 `-fno-tree-vectorize` 之后，A 侧 154 ms（**1.05x**），内核才开始起作用。
+凡是只报"`-march=rv64gcv` 对 `rv64gc`"的数字，都混着这层噪声，不能当移植成果。
+
+**为什么要 A 侧从 `baseline` 副本起**：flac 发现 `projects/<pkg>-rvv/src` 与 `baseline` 不是同
+一份上游（VORBIS_COMMENT 的 vendor 串分别是 `git-59fa340 20261028` 与 `1.5.0 20250211`），
+整文件字节不可比，`cmp` 永远失败。改成"复制 baseline 再打补丁"后才拿到逐字节同一的码流。
+这条对每个包都成立：**A 侧源码必须由 baseline 派生，不能拿历史遗留的 `src/`。**
+
+### 9.2 本轮已落地并推送的内核
+
+| 包 | 内核 | 内核级 | 端到端 A/B | 等价性判据 | 提交 |
+|---|---|---|---|---|---|
+| libpng | `png_read_filter_row_sub`（Hillis-Steele 前缀和 + 跨块进位）/ `_up`（整行向量加），e8m4 | Sub 12.9→7.5 ms **1.72x**；Up 4.2→4.1 ms 1.02x | 2048×2048 RGB 解码 113.3→107.1 ms **1.06x** | 两档解码像素 `chk=bd5b0d7dee2dd1fd` 相同 | `54681fb`（本地 `3c5f914`） |
+| flac | `FLAC__lpc_compute_residual_from_qlp_coefficients`（编码侧残差，样本间并行），e32m4 | order 8 2.14→0.11 ms **20.2x**；order 12 5.19→0.15 ms **34.1x** | `flac -8` 编码 15 s 44.1k 立体声 **498→219 ms（2.27x）** | `.flac` **逐字节相同**（`745c885e…`）；库级 11 长度 × order 1–32 × shift 4–15 指纹 `df8d9c26580eec53` 两侧一致 | `02fa3c3` |
+| libwebp | 编码器 `SSE16x16` / `SSE16x8`（u8 差 → u16 → u32 平方和，`vredsum` 归约） | — | `cwebp -q75/-q90 -m4` 512×512：**162→154 ms (1.05x) / 171→162 ms (1.06x)** | `.webp` **逐字节相同** | `e5a8829` |
+| zimg | 水平 resize（原有内核，gcc 15 API 修正） | — | 本轮只做门禁 | A/B ALL PASS（2 用例逐字节一致） | `e0cb95a` |
+
+### 9.3 本轮只过门禁、未出性能数的包
+
+| 包 | 结果 | 说明 |
+|---|---|---|
+| x264 | A/B **ALL PASS**（2 用例逐字节一致） | 已有 SAD/SSD 内核（`f61cf90`），本轮在真机重跑门禁通过 |
+| opus | A/B **ALL PASS**（2 用例逐字节一致） | 已有 xcorr 内核（3 个内核文件），本轮重跑门禁通过 |
+| openssl | 构建中 | 6 条路径内核（`ea62cf5`），本轮 A/B 仍在编 baseline |
+| libvpx / libjpeg-turbo / libgcrypt / libde265 / libaom / fftw / eigen / botan / cryptopp / mpg123 / nettle / pixman / speexdsp / libspeex / webrtc-ap / gromacs / zlib-ng / stockfish | 未在本轮重跑 | 各自的上一轮数字在第 2–8 节，部分需要用 9.1 的新口径重测 |
+
+### 9.4 本轮被否决/踩坑的项（勿重复）
+
+1. **flac 解码侧 `FLAC__lpc_restore_signal`**：样本间强依赖，只能每样本做 order 次点积，
+   位精确通过但端到端 **0.94x**，已从源码撤除，只留在 perf-log。
+2. **nettle 单块 ChaCha 4 车道向量化**：位精确通过、性能 **0.48x**。`_nettle_chacha_core` 是单块
+   16 字 API，VLEN=256 上只用 4/8 车道，指令条数与标量相同。要做必须改调用结构做 4 块并行。
+3. **libwebp `SSE8x8` / `SSE4x4`**：车道太少（8/4），`vsetvl`+装载开销吃满收益，未启用。
+4. **zimg `vnclipu`**：gcc 15 的 intrinsic 签名变成四参 `(op1, shift, rm, vl)`，
+   旧代码 `(u, 0, vl)` 直接编译失败；补 `__RISCV_VXRM_RNU` 后恢复。
+5. **不要用历史 `src/` 当 A 侧**：见 9.1，flac 已实证。
+
