@@ -723,3 +723,36 @@ B = `baseline` 且两者同为 `-march=rv64gc` 时**互为同一构建**，比�
 仍在核验上游向量路径是否真正生效的 4 个包：stockfish（`USE_RVV` 显式分支，需单变量
 隔离）、pixman（`USE_RVV`）、libgcrypt（AES 路径）、gromacs（1 处 intrinsics）、
 botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，逐个确认后补测。
+
+### 8.4 上游向量路径 5 包的核验结果
+
+| 包 | 负载 | A（rv64gcv/内核开） | B（rv64gc） | 比例 | 等价性 |
+|---|---|---|---|---|---|
+| stockfish | `bench 1 1 9` | 823 ms | 27619 ms | **33.6x** | Nodes 211053 两侧相同 |
+| pixman | 1024×1024 OVER×200 | 768.3 ms | 793.9 ms | 1.03x | 像素指纹 `2ddbc3f111d30b83` 相同 |
+| libgcrypt | AES-256-ECB 200 万块 | 99.7 ms | 82.5 ms | **0.83x** | `aes_fnv=804c06c1fd2ffcb0` 相同 |
+| libgcrypt | SHA-256 ×8（各 66 MB） | 401.6 ms | 426.2 ms | 1.06x | 摘要 `2fc48dbd…b827fc` 相同 |
+| gromacs | 1530 原子 1000 步 mdrun | — | — | 1.00x（沿用第 1 轮 0.99x） | 势能逐位相同 |
+| botan | SHA-256 / AES-256 | — | — | 1.00x（无内核） | — |
+
+判读：
+- **stockfish 33.6x 是真正的移植成果**：`ARCH=riscv64-rva23` 打开 `USE_RVV` 后 NNUE
+  推理走手写 RVV 内核，`Nodes` 完全一致；这是全部 26 包里唯一"上游自带内核且真实生效"的。
+- **pixman 1.03x**：上游 `USE_RVV` 只覆盖极少数 fast path，主流 OVER 合成仍走 C 标量，
+  属于"有路径但没量"，要提速必须自己写内核。
+- **libgcrypt AES 0.83x 是负收益**：`-march=rv64gcv` 触发的自动向量化反而拖慢 AES 表查
+  实现，A 侧应退回 `rv64gc`（即该包当前最优构建就是基线，1.00x）；SHA 的 1.06x 同样是
+  自动向量化贡献，不写内核就没有增量。
+- **gromacs / botan**：无有效 RVV 路径（gromacs 仅 1 处 intrinsics，botan 无向量内核），
+  按第 7.3 节口径记 1.00x，等待移植。
+
+### 8.5 全量重测结论
+
+26 个包里，"按修正口径实测有正收益"的只有 2 个：
+1. **libspeex**：1.45–2.22x（编码六档）、1.48–2.14x（wb/uwb 解码），六档全部 bit-exact PASS——
+   唯一一个自写内核并拿到稳定加速的包；
+2. **stockfish**：33.6x，上游 NNUE RVV 内核，Nodes 一致。
+
+其余 24 个在修正口径下为 1.00x 或略低于 1.00x（libpng 0.93x、libgcrypt AES 0.83x），
+原因统一是"没有 RVV 内核"或"上游 RVV 路径未覆盖热点"。这把结论从第 1 轮的
+"5 处正收益、13 处回退"校正为可复现的事实：**加速只能来自内核，自动向量化既不可靠也不可报价。**
