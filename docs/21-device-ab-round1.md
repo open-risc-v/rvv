@@ -836,11 +836,21 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 | zlib-ng | **PASS** | 2 用例逐字节一致 |
 | stockfish | **PASS** | 1 用例逐字节一致（上游 NNUE RVV） |
 | libvpx | **PASS** | `src/` 缺上游 `build/make/`（被 `.gitignore` 的 `build/` 规则吞掉），`rsync --ignore-existing baseline/ src/` 补齐后 A/B 全绿（`009ab00`） |
-| mpg123 | **FAIL（缺头文件）** | `mpg123.h: 没有那个文件或目录` —— 门禁要求上游先安装到 `PKG_PREFIX`，本环境没做这一步 |
-| speexdsp | **FAIL（缺头文件）** | `speex/speex_echo.h` 同上 |
+| mpg123 | **PASS** | 新增 `cmake/pkg-build.sh`（`autoreconf -fi` + configure + install，两侧各编一份 prefix），探针拿到 `mpg123.h`；A/B 全绿（`35d6d0e`） |
+| speexdsp | **PASS** | 同一套 autotools 接入（`autogen.sh` 路径），A/B 全绿（`62caa76`） |
 | gromacs | **FAIL（配置）** | `GMXRC.cmakein` / `GMXRC.bash.cmakein` 缺失（baseline 上游不完整） |
-| nettle | **FAIL（运行）** | `nettle-hash` A 侧运行失败（本轮的 ChaCha 内核已撤，需重查 hash 路径） |
+| nettle | **PASS** | `upstream.cmake` 原来是空模板、`tools/nettle-hash` 从未构建；补 `cmake/pkg-build.sh`（`.bootstrap`+configure+install，两侧各一份）后，哈希全算法 + lfib 流逐字节一致（`3f96d19`） |
 | libaom | **FAIL（版本不一致）** | 四侧对照定点：A(src+gcv+内核)=2683 B、A2(src+gcv 关内核)=2683、A3(src+gcv 关全自动向量化)=2683，而 B2(baseline+gc 关向量化)=2380、B3(baseline+gcv)=2380。**结论：差异来自 src 与 baseline 不是同一版 libaom**（`diff -rq` 显示 `aom/*.h` 大面积不同、`src/aom/aom_ext_ratectrl.h` 只在 src 存在），与内核无关；需按 9.1 口径用与 src 同版本树重建 baseline 后再测 |
 
-18 个包门禁绿，6 个包待修（原因已定位到具体报错，见上表）。
+### 9.6 本轮门禁修复汇总（真机复跑）
+
+22 个包门禁绿。修复路径按类别归纳：
+
+| 类别 | 包 | 处置 |
+|---|---|---|
+| 自写内核 + 真机出数 | libpng、flac、libwebp | 见 9.2，内核级 1.72x / 2.27x / 1.05x |
+| gcc 15 签名或环境适配 | zimg、openssl、libvpx、libspeex | `vnclipu` 四参、用例长度期望、`src/build/make` 缺失、失效测试目标 |
+| 上游未接入（骨架空模板） | nettle、mpg123、speexdsp | 统一补 `cmake/pkg-build.sh`，两侧各编一份 prefix，A/B 才真正可比 |
+
+仍在待修：**libaom**（src 与 baseline 版本不一致，需按 9.1 口径用同版本树重建 baseline）、**gromacs**（`src/scripts` 缺 `GMXRC*.cmakein`，已 rsync 补齐，上游 CMake 全量构建耗时中）。
 
