@@ -795,7 +795,7 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 |---|---|---|
 | x264 | A/B **ALL PASS**（2 用例逐字节一致） | 已有 SAD/SSD 内核（`f61cf90`），本轮在真机重跑门禁通过 |
 | opus | A/B **ALL PASS**（2 用例逐字节一致） | 已有 xcorr 内核（3 个内核文件），本轮重跑门禁通过 |
-| openssl | 构建中 | 6 条路径内核（`ea62cf5`），本轮 A/B 仍在编 baseline |
+| openssl | A/B **ALL PASS**（2 用例逐字节一致） | 修掉了 01 用例的密文长度期望（harness 落 CBC+CTR+GCM+tag = 3×64KiB+16 = 196624 B），**性能 1.00x**：CBC 0.054/0.055、CTR 0.026/0.026、GCM 0.037/0.037、SHA-256 0.078/0.079、SHA-512 0.100/0.100 —— 6 条路径全都在噪声内，说明上游 riscv asm 没打进实际热点 |
 | libvpx / libjpeg-turbo / libgcrypt / libde265 / libaom / fftw / eigen / botan / cryptopp / mpg123 / nettle / pixman / speexdsp / libspeex / webrtc-ap / gromacs / zlib-ng / stockfish | 未在本轮重跑 | 各自的上一轮数字在第 2–8 节，部分需要用 9.1 的新口径重测 |
 
 ### 9.4 本轮被否决/踩坑的项（勿重复）
