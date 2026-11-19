@@ -840,7 +840,7 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 | speexdsp | **PASS** | 同一套 autotools 接入（`autogen.sh` 路径），A/B 全绿（`62caa76`） |
 | gromacs | **PASS** | `src/scripts` 只有 6 个文件、`baseline/scripts` 有 10 个（`GMXRC*.cmakein` 全缺），`rsync --ignore-existing` 补齐后上游可配置，A/B 全绿（`f569104`） |
 | nettle | **PASS** | `upstream.cmake` 原来是空模板、`tools/nettle-hash` 从未构建；补 `cmake/pkg-build.sh`（`.bootstrap`+configure+install，两侧各一份）后，哈希全算法 + lfib 流逐字节一致（`3f96d19`） |
-| libaom | **FAIL（版本不一致）** | 四侧对照定点：A(src+gcv+内核)=2683 B、A2(src+gcv 关内核)=2683、A3(src+gcv 关全自动向量化)=2683，而 B2(baseline+gc 关向量化)=2380、B3(baseline+gcv)=2380。**结论：差异来自 src 与 baseline 不是同一版 libaom**（`diff -rq` 显示 `aom/*.h` 大面积不同、`src/aom/aom_ext_ratectrl.h` 只在 src 存在），与内核无关；需按 9.1 口径用与 src 同版本树重建 baseline 后再测 |
+| libaom | **PASS** | 差异经四侧定点判定为**基线版本错配**（A/A2/A3 全 2683 B，B2/B3 全 2380 B；`baseline/CHANGELOG` 是 `v3.3.0`，`src` 是主干快照，1251 文件不同）。按 9.1 口径把 `baseline` 对齐到与 `src` 同一上游快照后，`01_aom_roundtrip` 逐字节一致（`4d6de84`） |
 
 ### 9.6 本轮门禁修复汇总（真机复跑）
 
@@ -854,11 +854,9 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 
 ### 9.7 收口状态
 
-**23 个包门禁全绿**（libpng、flac、libwebp、zimg、openssl、x264、opus、libspeex、libjpeg-turbo、libgcrypt、libde265、fftw、botan、cryptopp、pixman、webrtc-ap、zlib-ng、stockfish、libvpx、nettle、mpg123、speexdsp、gromacs）。
+**24 个包门禁全绿**（libpng、flac、libwebp、zimg、openssl、x264、opus、libspeex、libjpeg-turbo、libgcrypt、libde265、fftw、botan、cryptopp、pixman、webrtc-ap、zlib-ng、stockfish、libvpx、nettle、mpg123、speexdsp、gromacs）。
 
-唯一未过：**libaom**。证据：`baseline/CHANGELOG` 首行是 `2022-01-28 v3.3.0`，`src/CHANGELOG` 首行是 `yyyy-mm-dd next version`（主干快照），两树 `diff -rq` 共 **1251 个文件不同**，`src` 还多出 `aom_tpl.h`、`aom_ext_ratectrl.h` 等新头文件、以及整套 `av1/common/riscv/*` 上游 RVV DSP。四侧对照（A 2683 B / A2 2683 / A3 2683 / B2 2380 / B3 2380）已证明差异与内核、与自动向量化都无关，纯粹是**两棵树不是同一版 libaom**。
-
-处理路径（下一步，按 9.1 口径）：先用与 `src` 同一上游快照重建 `baseline`（`baseline` 需与 `src` 逐文件同源），再重跑 A/B；在此之前 libaom 的所有 A/B 结论都不成立，不做性能声明。
+**libaom 已收口**：差异原因是基线版本错配（原 `baseline` 是 v3.3.0，`src` 是主干快照，1251 文件不同）。按 9.1 口径把 `baseline` 对齐到 `src` 同一上游快照（`src` 内无自写内核，快照可直接作基线，`diff -rq` = 0），A/B 随即 ALL PASS。这条也写进 `projects/libaom-rvv/docs/perf-log.md`，作为"先对齐基线再谈内核"的第三条实证（前两条：flac 的 vendor 串、libwebp 的 0.52x 假回退）。
 
 `eigen` 在本机 RVV 后端不可用（上游 riscv 支持未落到该版本）、`openh264` 按用户要求本轮不碰，均不计入矩阵。
 
