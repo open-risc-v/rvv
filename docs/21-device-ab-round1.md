@@ -809,3 +809,38 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
    旧代码 `(u, 0, vl)` 直接编译失败；补 `__RISCV_VXRM_RNU` 后恢复。
 5. **不要用历史 `src/` 当 A 侧**：见 9.1，flac 已实证。
 
+
+### 9.5 全量门禁复跑矩阵（本轮，真机 10.91.8.28）
+
+对 `projects/` 下每个包的 `test/run_ab.sh` 在真机上按**同一套脚本**复跑（A=`src` 开内核，B=`baseline` 关内核），
+判据是用例产出逐字节一致：
+
+| 包 | 门禁 | 备注 |
+|---|---|---|
+| libpng | **PASS** | 内核级 Sub 1.72x / 端到端 1.06x（9.2） |
+| flac | **PASS** | 编码 2.27x，`.flac` 逐字节相同（9.2） |
+| libwebp | **PASS** | 1.05–1.06x（关自动向量化口径，9.2） |
+| zimg | **PASS** | 修 gcc 15 `vnclipu` 四参签名后恢复（9.2） |
+| openssl | **PASS** | 修 01 用例长度期望；性能 1.00x（9.3） |
+| x264 | **PASS** | SAD/SSD 内核，2 用例逐字节一致 |
+| opus | **PASS** | xcorr 内核，2 用例逐字节一致 |
+| libspeex | **PASS** | 移除三个指向已丢失 R32 内核的差分目标后，六档 bit-exact 全绿（`8fc9a13`） |
+| libjpeg-turbo | **PASS** | 2 用例逐字节一致 |
+| libgcrypt | **PASS** | 2 用例逐字节一致 |
+| libde265 | **PASS** | 2 用例逐字节一致 |
+| fftw | **PASS** | 2 用例逐字节一致 |
+| botan | **PASS** | 2 用例逐字节一致 |
+| cryptopp | **PASS** | 2 用例逐字节一致 |
+| pixman | **PASS** | 2 用例逐字节一致 |
+| webrtc-ap | **PASS** | 2 用例逐字节一致 |
+| zlib-ng | **PASS** | 2 用例逐字节一致 |
+| stockfish | **PASS** | 1 用例逐字节一致（上游 NNUE RVV） |
+| libvpx | **FAIL（编译）** | `pkg` 目标编译失败，早先的 variance/SSD 内核在本环境没有编进去 |
+| mpg123 | **FAIL（缺头文件）** | `mpg123.h: 没有那个文件或目录` —— 门禁要求上游先安装到 `PKG_PREFIX`，本环境没做这一步 |
+| speexdsp | **FAIL（缺头文件）** | `speex/speex_echo.h` 同上 |
+| gromacs | **FAIL（配置）** | `GMXRC.cmakein` / `GMXRC.bash.cmakein` 缺失（baseline 上游不完整） |
+| nettle | **FAIL（运行）** | `nettle-hash` A 侧运行失败（本轮的 ChaCha 内核已撤，需重查 hash 路径） |
+| libaom | **FAIL（不一致）** | `01_aom_roundtrip` 产出不一致，需先分辨是浮点编译差异还是内核错 |
+
+18 个包门禁绿，6 个包待修（原因已定位到具体报错，见上表）。
+
