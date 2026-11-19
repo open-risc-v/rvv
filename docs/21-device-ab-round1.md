@@ -838,7 +838,7 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 | libvpx | **PASS** | `src/` 缺上游 `build/make/`（被 `.gitignore` 的 `build/` 规则吞掉），`rsync --ignore-existing baseline/ src/` 补齐后 A/B 全绿（`009ab00`） |
 | mpg123 | **PASS** | 新增 `cmake/pkg-build.sh`（`autoreconf -fi` + configure + install，两侧各编一份 prefix），探针拿到 `mpg123.h`；A/B 全绿（`35d6d0e`） |
 | speexdsp | **PASS** | 同一套 autotools 接入（`autogen.sh` 路径），A/B 全绿（`62caa76`） |
-| gromacs | **FAIL（配置）** | `GMXRC.cmakein` / `GMXRC.bash.cmakein` 缺失（baseline 上游不完整） |
+| gromacs | **PASS** | `src/scripts` 只有 6 个文件、`baseline/scripts` 有 10 个（`GMXRC*.cmakein` 全缺），`rsync --ignore-existing` 补齐后上游可配置，A/B 全绿（`f569104`） |
 | nettle | **PASS** | `upstream.cmake` 原来是空模板、`tools/nettle-hash` 从未构建；补 `cmake/pkg-build.sh`（`.bootstrap`+configure+install，两侧各一份）后，哈希全算法 + lfib 流逐字节一致（`3f96d19`） |
 | libaom | **FAIL（版本不一致）** | 四侧对照定点：A(src+gcv+内核)=2683 B、A2(src+gcv 关内核)=2683、A3(src+gcv 关全自动向量化)=2683，而 B2(baseline+gc 关向量化)=2380、B3(baseline+gcv)=2380。**结论：差异来自 src 与 baseline 不是同一版 libaom**（`diff -rq` 显示 `aom/*.h` 大面积不同、`src/aom/aom_ext_ratectrl.h` 只在 src 存在），与内核无关；需按 9.1 口径用与 src 同版本树重建 baseline 后再测 |
 
@@ -852,5 +852,13 @@ botan（SHA-256 需按文件开向量）。这几包沿用第 7.2 节分类，�
 | gcc 15 签名或环境适配 | zimg、openssl、libvpx、libspeex | `vnclipu` 四参、用例长度期望、`src/build/make` 缺失、失效测试目标 |
 | 上游未接入（骨架空模板） | nettle、mpg123、speexdsp | 统一补 `cmake/pkg-build.sh`，两侧各编一份 prefix，A/B 才真正可比 |
 
-仍在待修：**libaom**（src 与 baseline 版本不一致，需按 9.1 口径用同版本树重建 baseline）、**gromacs**（`src/scripts` 缺 `GMXRC*.cmakein`，已 rsync 补齐，上游 CMake 全量构建耗时中）。
+### 9.7 收口状态
+
+**23 个包门禁全绿**（libpng、flac、libwebp、zimg、openssl、x264、opus、libspeex、libjpeg-turbo、libgcrypt、libde265、fftw、botan、cryptopp、pixman、webrtc-ap、zlib-ng、stockfish、libvpx、nettle、mpg123、speexdsp、gromacs）。
+
+唯一未过：**libaom**。证据：`baseline/CHANGELOG` 首行是 `2022-01-28 v3.3.0`，`src/CHANGELOG` 首行是 `yyyy-mm-dd next version`（主干快照），两树 `diff -rq` 共 **1251 个文件不同**，`src` 还多出 `aom_tpl.h`、`aom_ext_ratectrl.h` 等新头文件、以及整套 `av1/common/riscv/*` 上游 RVV DSP。四侧对照（A 2683 B / A2 2683 / A3 2683 / B2 2380 / B3 2380）已证明差异与内核、与自动向量化都无关，纯粹是**两棵树不是同一版 libaom**。
+
+处理路径（下一步，按 9.1 口径）：先用与 `src` 同一上游快照重建 `baseline`（`baseline` 需与 `src` 逐文件同源），再重跑 A/B；在此之前 libaom 的所有 A/B 结论都不成立，不做性能声明。
+
+`eigen` 在本机 RVV 后端不可用（上游 riscv 支持未落到该版本）、`openh264` 按用户要求本轮不碰，均不计入矩阵。
 
