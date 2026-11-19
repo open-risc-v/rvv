@@ -628,3 +628,51 @@ B = `baseline/` + `-O2 -march=rv64gc`；`bench_e2e <mode> <q> 4 5`（4 秒信号
    给 nb 的 `filters/ltp` 加长度阈值，短帧回落标量路径；
 3. 本轮确立的 A/B 口径（A=`src`+内核、B=`baseline`+`rv64gc`）作为**所有工程的基础口径**，
    下面第 7 节据此重新定性其余 25 个包。
+
+## 7. 用修正口径重新定性其余 25 个包
+
+### 7.1 先数"上游到底有没有向量代码"（真机 baseline 目录 grep）
+
+`grep -rl 'riscv_vector.h|__riscv_v' baseline/`（含 `-e USE_RVV`）：
+
+| 有 intrinsics 的上游 | 命中文件数 | 有 `USE_RVV` 宏 |
+|---|---|---|
+| libgcrypt | 20 | — |
+| libjpeg-turbo | 17 | — |
+| eigen | 10 | ✔ |
+| stockfish | 7 | ✔（8 处） |
+| zlib-ng | 5 | —（`arch/riscv` 目录 + 特性探测自动启用） |
+| libpng | 2 | — |
+| gromacs / pixman | 1 / 1 | — / ✔（2 处） |
+
+**零命中的 18 个**：botan、cryptopp、fftw、flac、libaom、libde265、libspeex、libvpx、
+libwebp、mpg123、nettle、openh264、openssl、opus、speexdsp、webrtc-ap、x264、zimg。
+另外 `libspeex` 的 intrinsics 全在工程自己的 `src/libspeex/rvv/`（上游 `baseline/` 当然为 0，
+这也正是第 6 节事故的由来）。
+
+### 7.2 三类结论（决定每个包下一步该干什么）
+
+**A 类——上游自带向量内核，数字本身就有效**（唯一要求是确认开关真的开了）：
+zlib-ng（压缩 1.42x / 解压 0.81x，`arch/riscv` 自动启用）、stockfish（31.8x，
+`ARCH=riscv64-rva23` + `USE_RVV`）、eigen（10 个 intrinsics 文件，但实测 0.028x——
+说明**它的 RVV 内核没被选中**，属"开关没开"而非"没内核"，需查 `EIGEN_USE_RVV`）、
+pixman（0.99x，`USE_RVV` 已开但收益被总体抵消）、libgcrypt（20 个文件，AES 0.83x）、
+libjpeg-turbo（17 个文件，实测 ≈1.00x，需查 SIMD 开关与 arch 选择）、libpng（2 个文件，≈1.00x）。
+
+**B 类——上游无 intrinsics，但 gcc 自动向量化确有正收益**：
+flac 编码 1.50x、botan SHA-256 1.25x、fftw 1.12x。这三个的收益**依赖自动向量化**，
+必须保留 `-march=rv64gcv`，不能套用"全局关向量"。
+
+**C 类——上游无 intrinsics 且自动向量化负收益**：
+libspeex（上游路径 0.24x，工程内核路径 1.44–2.20x）、zimg 0.13x、mpg123 0.77x、
+opus 0.74x、botan AES 0.68x、libde265 0.88x、libaom 0.89x、cryptopp 0.86x、
+nettle SHA 0.92x、zlib-ng 解压 0.81x、flac 解压 0.86x。
+这一类的基线口径应当是 `-march=rv64gc`，**只有写出内核才谈加速**。
+
+### 7.3 由此定下的全量口径
+
+1. 每包的 A/B 一律：**A = 该包的移植树/最佳可用构建（内核或上游向量路径开到底），
+   B = `baseline` + `-march=rv64gc -O2`**；
+2. 只加 `-march=rv64gcv` 而不开任何内核/向量路径的构建，**不再作为 "rvv" 档**——
+   它不是移植成果，只是自动向量化的副作用（第 5 轮那批 0.13x/0.24x 就是这么来的）；
+3. 表里 `1.00x` 的诚实含义是"还没做任何加速"，而不是"RVV 没用"。
