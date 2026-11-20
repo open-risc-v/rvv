@@ -13,10 +13,14 @@
 | cryptopp | `xorbuf`（就地 / 三缓冲 XOR，`src/riscv/xor_rvv.h`，e8m1） | `misc.cpp` 两个 `xorbuf()` 入口早返回 | ALL PASS（2 用例） | `122aab0` |
 | nettle | `memxor`（`src/riscv/memxor_rvv.h`，e8m1） | `memxor.c` 的 `memxor()` 在 `n>=64` 时早返回 | ALL PASS（2 用例，`nettle-hash` 逐字节一致） | `06bf412` |
 | botan | `xor_buf`（`src/src/riscv/xor_rvv.h`，e8m1） | `lib/utils/mem_ops.h` 两处 `xor_buf()` 早返回 | ALL PASS（2 用例） | `9cc68e1` |
+| speexdsp | 窗函数应用（`src/libspeexdsp/riscv/window_rvv.h`，e32m4 逐元素乘） | `preprocess_analysis()` 的 windowing 循环（非定点构建下就是纯乘） | ALL PASS（`00_framework` + 新增 `speexdsp-echo` 真实用例） | `c80b0ab` |
+| mpg123 | `dct64` 第一级蝶形（`src/src/libmpg123/riscv/dct64_rvv.h`，e32m1 + `vrgather` 反序） | `INT123_dct64()` 开头两个 16 长度循环 | ALL PASS（`00_framework` + 新增 `mpg123-decode` 真实用例，解码 PCM 逐字节一致） | `41c5850` |
 
-七包都验证过"A 侧真的编进去了"（zlib-ng：`flags.make` 含 `RVV_KERNELS=1`；libgcrypt：`bufhelp.h` include + 355/433 行调用分支；libvpx：`nm` 符号计数 A=1 / B=0；botan：`pkg-build.sh` 的 `--extra-cxxflags` 多了 `-DRVV_KERNELS=1 -Isrc/riscv`）。
+九包都验证过"A 侧真的编进去了"（zlib-ng：`flags.make` 含 `RVV_KERNELS=1`；libgcrypt：`bufhelp.h` include + 355/433 行调用分支；libvpx：`nm` 符号计数 A=1 / B=0；botan：`pkg-build.sh` 的 `--extra-cxxflags` 多了 `-DRVV_KERNELS=1 -Isrc/riscv`；speexdsp/mpg123：`build/ab-a/pkg/src/config.log` 有 `-DRVV_KERNELS=1`，B 侧没有）。
 
-botan 的坑值得记一笔：`configure.py` 会把公共头**拷进** `build/include/public/botan/`，任何相对路径 `#include "../../riscv/x.h"` 在副本里必然失效，只能改成裸文件名 `"xor_rvv.h"` 并靠 `-Isrc/riscv` 找头。
+**本轮最贵的教训**：门禁 PASS 不等于内核生效。speexdsp/mpg123 第一版透传把 `CFLAGS=...` 拼进了 configure 参数，被拆成独立 argv 后 configure 直接吞掉，A 侧其实编的是原样 C 代码——第一次"PASS"是空内核的假绿。改成 `export CFLAGS="-O2 -march=... -DRVV_KERNELS=1"` 后，用 `config.log` 里的宏 + `objdump -d` 的 `vfmul`/`vrgather` 双向确认，才敢记成"落地"。
+
+botan 的坑也值得记一笔：`configure.py` 会把公共头**拷进** `build/include/public/botan/`，任何相对路径 `#include "../../riscv/x.h"` 在副本里必然失效，只能改成裸文件名 `"xor_rvv.h"` 并靠 `-Isrc/riscv` 找头。
 
 ## 2. 启用即用（上游已自带 RVV 路径）
 
@@ -27,17 +31,17 @@ botan 的坑值得记一笔：`configure.py` 会把公共头**拷进** `build/in
 
 这两包本轮只补了 `pkg-build.sh` 的 march/内核开关透传，**没有新增自写内核**——如实记在这里，避免把"上游自带"算成"本轮实现"。
 
-## 3. 仍未写内核的包（5 个）
+## 3. 仍未写内核的包（3 个）
 
-speexdsp、mpg123、fftw、gromacs、stockfish。逐个卡点（都是实测，不是推测）：
+fftw、gromacs、stockfish。逐个卡点（都是实测，不是推测）：
 
 | 包 | 现有用例 | 卡点 |
 |---|---|---|
-| speexdsp | 只有 `00_framework` | `test/pkg_speexdsp.c` 探针写好了但**没接进 CMake**（`add_executable` 只有 cpu_probe / diff_kernels），没有上游产物比，写内核也没证据 |
-| mpg123 | 只有 `00_framework` | 同上，`test/pkg_mpg123.c`（68 行）未接入构建 |
-| stockfish | 只有 `00_framework` | 连探针都没有，`cmake/upstream.cmake` 仍是空模板，上游 `src/src/Makefile` 未接 |
-| fftw | `01_fftw` | 用例在；但 FFT 的蝶形/码本是浮点且要保运算顺序，位精确约束下的点位未定 |
+| stockfish | 只有 `00_framework` | 连探针都没有，`cmake/upstream.cmake` 仍是空模板，上游 `src/src/Makefile` 未接；且真跑搜索需要 NNUE 网络文件，板上没有 |
+| fftw | `01_fftw`（`fftw_harness` 已接） | 用例在；r2c 的码本/蝶形是浮点且要保运算顺序，位精确约束下有收益的点位还没定出来 |
 | gromacs | `01_gromacs` | 用例在；`pbc_dx` 的矩形分支是「while 循环折返」，三元素且带数据相关循环，向量化不划算且难保位精确 |
+
+speexdsp / mpg123 这轮已经补完：两侧上游 prefix 由 `cmake/pkg-build.sh` 编，探针 `pkg_*.c` 由 `cmake/upstream.cmake` 里的 `*_harness` 目标接进来，用例脚本放进 `test/cases/` 后门禁才真正有产物可比。
 
 这批包的共同点是：`src/` 里既无 `rvv/`/`riscv/` 目录、也无 `RVV_KERNELS` 命中，内核要从零创建，且都走 `cmake/pkg-build.sh` 编上游，需要沿用本轮验证过的穿透范式：
 
