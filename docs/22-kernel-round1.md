@@ -29,7 +29,15 @@ botan 的坑值得记一笔：`configure.py` 会把公共头**拷进** `build/in
 
 ## 3. 仍未写内核的包（5 个）
 
-speexdsp、mpg123、fftw、gromacs、stockfish。
+speexdsp、mpg123、fftw、gromacs、stockfish。逐个卡点（都是实测，不是推测）：
+
+| 包 | 现有用例 | 卡点 |
+|---|---|---|
+| speexdsp | 只有 `00_framework` | `test/pkg_speexdsp.c` 探针写好了但**没接进 CMake**（`add_executable` 只有 cpu_probe / diff_kernels），没有上游产物比，写内核也没证据 |
+| mpg123 | 只有 `00_framework` | 同上，`test/pkg_mpg123.c`（68 行）未接入构建 |
+| stockfish | 只有 `00_framework` | 连探针都没有，`cmake/upstream.cmake` 仍是空模板，上游 `src/src/Makefile` 未接 |
+| fftw | `01_fftw` | 用例在；但 FFT 的蝶形/码本是浮点且要保运算顺序，位精确约束下的点位未定 |
+| gromacs | `01_gromacs` | 用例在；`pbc_dx` 的矩形分支是「while 循环折返」，三元素且带数据相关循环，向量化不划算且难保位精确 |
 
 这批包的共同点是：`src/` 里既无 `rvv/`/`riscv/` 目录、也无 `RVV_KERNELS` 命中，内核要从零创建，且都走 `cmake/pkg-build.sh` 编上游，需要沿用本轮验证过的穿透范式：
 
