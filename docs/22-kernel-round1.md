@@ -38,8 +38,8 @@ fftw、gromacs。逐个卡点（都是实测，不是推测）：
 
 | 包 | 现有用例 | 卡点 |
 |---|---|---|
-| fftw | `01_fftw`（`fftw_harness` 已接，`fftw_plan_dft_1d` + `FFTW_ESTIMATE`） | 用例在；r2c 的码本/蝶形是浮点且要保运算顺序，位精确约束下有收益的点位还没定出来 |
-| gromacs | `01_gromacs` | 用例在；`pbc_dx` 的矩形分支是「while 循环折返」，三元素且带数据相关循环，向量化不划算且难保位精确 |
+| fftw | `01_fftw`（`fftw_harness` 已接，1024 点复 FFT + `FFTW_ESTIMATE`） | 用例在。1024=64×16，实际用的是 `n1_64`/`n1_16` 码本；`n1_2` 这种小码本根本不会被调度到，钩它等于空跑——必须按 FFTW 自己的分解表选码本，且要保持非 FMA 分支的运算顺序 |
+| gromacs | `01_gromacs` | 实测该用例跑的是 `gmx editconf`（`tiny.gro` 进、`edited.gro` 出），**不是 mdrun**；因此内核点位必须在 editconf 的路径上（配箱/写结构），mdrun 侧的 `pbc_dx`、SETTLE 都跑不到 |
 
 speexdsp / mpg123 / stockfish 这轮已经补完：两侧上游由 `cmake/pkg-build.sh` 各编一份（前两者 autotools、后者自带 Makefile），用例脚本放进 `test/cases/` 后门禁才真正有产物可比。
 
