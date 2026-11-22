@@ -54,3 +54,10 @@ speexdsp / mpg123 / stockfish 这轮已经补完：两侧上游由 `cmake/pkg-bu
 
 - libaom、libde265 的上游 RVV 文件（`av1/common/riscv/`、`libde265/riscv/`）在 `src/` 里存在但**未进构建**（`CMakeLists.txt` 无 riscv 命中），需自己接线后才算落地。
 - pixman/libjpeg-turbo 若要"自写内核"，得另选点位（上游已覆盖主要 fast path）。
+
+## 5. 更新（本轮推进）
+
+- **fftw 完成**（子模块 `68a25f9`）：靶点由 `fftw_print_plan` 实测确定为 **`n1_32`（整条计划只有它，1024 = 32×32）**。内核 `src/dft/scalar/riscv/n1_32_rvv.h` 把 32 个批铺到 8 条 lane（e64m2），输入按批步长 gather 成 SoA，码本语句体逐字照抄非 FMA 分支（只把 `ri/ii[WS(is,k)]`、`ro/io[WS(os,k)]` 换成 `RIk/IIk/ROk/IOk`），输出 scatter 回去。`cmake/pkg-build.sh` 加 `MARCH/KERN` 两个位置参数并 `export CFLAGS`（autotools 只认环境变量），`cmake/upstream.cmake` 用 generator expression 传参。
+  - 门禁：A/B 逐字节一致（`dft1024 max_rel=3.112e-14 fnv=7c2af68f8fe41f90` 两侧相同）。
+  - 生效证据：A `config.log` 有 `-DRVV_KERNELS=1`、B 没有；A 的 `n1_32.o` 反汇编 150 条向量指令且有 `n1_32_rvv` 符号，B 为 0。
+  - 踩坑：① 抽取函数体时截断在 1310 行，漏掉末尾 6 行（正是 `os,11` / `os,27` 两组 store），表现为这两个输出点为 0、`max_rel=1.0`；`k%32 ∈ {11,27}` 全部错就是它的指纹。② 码本用 `E T...` 声明，向量化时要一并改类型；`ri[0]/ii[0]` 与 `WS(is,0)` 写法不同源，两种都要映射。③ 生成的头文件花括号比原函数少/多一层会报 "invalid storage class for function" 的误导性错误。
