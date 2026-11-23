@@ -61,3 +61,9 @@ speexdsp / mpg123 / stockfish 这轮已经补完：两侧上游由 `cmake/pkg-bu
   - 门禁：A/B 逐字节一致（`dft1024 max_rel=3.112e-14 fnv=7c2af68f8fe41f90` 两侧相同）。
   - 生效证据：A `config.log` 有 `-DRVV_KERNELS=1`、B 没有；A 的 `n1_32.o` 反汇编 150 条向量指令且有 `n1_32_rvv` 符号，B 为 0。
   - 踩坑：① 抽取函数体时截断在 1310 行，漏掉末尾 6 行（正是 `os,11` / `os,27` 两组 store），表现为这两个输出点为 0、`max_rel=1.0`；`k%32 ∈ {11,27}` 全部错就是它的指纹。② 码本用 `E T...` 声明，向量化时要一并改类型；`ri[0]/ii[0]` 与 `WS(is,0)` 写法不同源，两种都要映射。③ 生成的头文件花括号比原函数少/多一层会报 "invalid storage class for function" 的误导性错误。
+
+## 6. gromacs 用例迁移（已完成，内核待补）
+
+- 提交 `113fe1c`：`01_gromacs` 从 `gmx editconf` 改为 `grompp` + 20 步 `mdrun`，产出 `confout.gro`(255 B) 与 `traj.trr`(384 B) 的字节哈希；连跑两次 `cmp` 一致，**用例已可作逐字节门禁**。
+- 迁移踩坑（全部实测）：① 原 `tiny.gro` 只有 4 个原子（第二个水分子缺 HW1/HW2），mdrun 无法接受，新建 `test/data/tiny-water.gro`（单分子、2 nm 盒）；② 新版上游删了顶层 `spc.itp`，须 `oplsaa.ff/forcefield.itp` + `oplsaa.ff/spc.itp`；③ `constraint-algorithm` 不是合法 mdp 项（水自动走 SETTLE）；④ cutoff 1.0 nm 配 2.0 nm 盒触发“超过最短盒向量一半”，改 0.9；⑤ `GMX_THREAD_MPI=OFF` 下 `mdrun -nt` 直接致命报错；⑥ **`gen-vel=yes` 默认随机种子** → 必须 `gen-seed = 1234`，否则两次运行第 3 行坐标就不同（曾误判为 mdrun 不确定）。
+- SETTLE 内核（待补）设计已逐句核对：逐分子独立、无跨分子累加；三个必须当心点——`gmx::invsqrt` 的标量/double 语义、`pbc_dx_aiuc` 的分量折返要用 mask select 复刻、`bError` 是跨分子归约需 `vfirst` 并在出错时回退标量。门控条件：`packSize==1 && !bCalcVirial && pbc==PbcType::No`。
