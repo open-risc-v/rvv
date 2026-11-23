@@ -17,7 +17,9 @@
 | mpg123 | `dct64` 第一级蝶形（`src/src/libmpg123/riscv/dct64_rvv.h`，e32m1 + `vrgather` 反序） | `INT123_dct64()` 开头两个 16 长度循环 | ALL PASS（`00_framework` + 新增 `mpg123-decode` 真实用例，解码 PCM 逐字节一致） | `41c5850` |
 | stockfish | NNUE `affine_transform_non_ssse3`（`src/src/nnue/layers/riscv/affine_rvv.h`，i8×u8→i32） | 新增 `cmake/pkg-build.sh` 走上游 Makefile（`ARCH=general-64`，命令行 `CXXFLAGS/LDFLAGS` 压掉 `-m64`）；用例 `stockfish-eval.sh` 跑 `eval` | ALL PASS（`00_framework` + `stockfish-eval`，评估输出逐字节一致） | `ebc8cda` |
 
-十包都验证过"A 侧真的编进去了"（zlib-ng：`flags.make` 含 `RVV_KERNELS=1`；libgcrypt：`bufhelp.h` include + 355/433 行调用分支；libvpx：`nm` 符号计数 A=1 / B=0；botan：`pkg-build.sh` 的 `--extra-cxxflags` 多了 `-DRVV_KERNELS=1 -Isrc/riscv`；speexdsp/mpg123：`build/ab-a/pkg/src/config.log` 有 `-DRVV_KERNELS=1`，B 侧没有；stockfish：A 侧 `build.log` 里 27 条编译命令带 `-DRVV_KERNELS=1`）。
+| gromacs | SETTLE 约束（`src/src/gromacs/mdlib/riscv/settle_rvv.h`，e32m1 × 8 lane） | `settle.cpp` 的 `settleTemplate` 在 `packSize == 1` 时早返回并调 `settle_rvv`；PBC 折返**逐 lane 调标量 `pbc_dx_aiuc`** 保位精确 | ALL PASS（`01_gromacs`：`confout.gro` / `traj.trr` 两侧 `cmp` 一致） | `7f025fe` |
+
+十一包都验证过"A 侧真的编进去了"（zlib-ng：`flags.make` 含 `RVV_KERNELS=1`；libgcrypt：`bufhelp.h` include + 355/433 行调用分支；libvpx：`nm` 符号计数 A=1 / B=0；botan：`pkg-build.sh` 的 `--extra-cxxflags` 多了 `-DRVV_KERNELS=1 -Isrc/riscv`；speexdsp/mpg123：`build/ab-a/pkg/src/config.log` 有 `-DRVV_KERNELS=1`，B 侧没有；stockfish：A 侧 `build.log` 里 27 条编译命令带 `-DRVV_KERNELS=1`；gromacs：`settle.cpp.o` 反汇编 1115 条向量指令，且扰动探针实测生效）。
 
 **本轮最贵的教训**：门禁 PASS 不等于内核生效。speexdsp/mpg123 第一版透传把 `CFLAGS=...` 拼进了 configure 参数，被拆成独立 argv 后 configure 直接吞掉，A 侧其实编的是原样 C 代码——第一次"PASS"是空内核的假绿。改成 `export CFLAGS="-O2 -march=... -DRVV_KERNELS=1"` 后，用 `config.log` 里的宏 + `objdump -d` 的 `vfmul`/`vrgather` 双向确认，才敢记成"落地"。
 
@@ -32,9 +34,9 @@ botan 的坑也值得记一笔：`configure.py` 会把公共头**拷进** `build
 
 这两包本轮只补了 `pkg-build.sh` 的 march/内核开关透传，**没有新增自写内核**——如实记在这里，避免把"上游自带"算成"本轮实现"。
 
-## 3. 仍未写内核的包（2 个）
+## 3. 原卡点（均已解除，记录留档）
 
-fftw、gromacs。逐个卡点（都是实测，不是推测）：
+fftw、gromacs 都属于"原先没写内核"的包，现已各自落地（fftw `68a25f9`、gromacs `7f025fe`）。当时实测的卡点：
 
 | 包 | 现有用例 | 卡点 |
 |---|---|---|
@@ -62,8 +64,11 @@ speexdsp / mpg123 / stockfish 这轮已经补完：两侧上游由 `cmake/pkg-bu
   - 生效证据：A `config.log` 有 `-DRVV_KERNELS=1`、B 没有；A 的 `n1_32.o` 反汇编 150 条向量指令且有 `n1_32_rvv` 符号，B 为 0。
   - 踩坑：① 抽取函数体时截断在 1310 行，漏掉末尾 6 行（正是 `os,11` / `os,27` 两组 store），表现为这两个输出点为 0、`max_rel=1.0`；`k%32 ∈ {11,27}` 全部错就是它的指纹。② 码本用 `E T...` 声明，向量化时要一并改类型；`ri[0]/ii[0]` 与 `WS(is,0)` 写法不同源，两种都要映射。③ 生成的头文件花括号比原函数少/多一层会报 "invalid storage class for function" 的误导性错误。
 
-## 6. gromacs 用例迁移（已完成，内核待补）
+## 6. gromacs 用例迁移 + SETTLE 内核（已完成）
 
 - 提交 `113fe1c`：`01_gromacs` 从 `gmx editconf` 改为 `grompp` + 20 步 `mdrun`，产出 `confout.gro`(255 B) 与 `traj.trr`(384 B) 的字节哈希；连跑两次 `cmp` 一致，**用例已可作逐字节门禁**。
 - 迁移踩坑（全部实测）：① 原 `tiny.gro` 只有 4 个原子（第二个水分子缺 HW1/HW2），mdrun 无法接受，新建 `test/data/tiny-water.gro`（单分子、2 nm 盒）；② 新版上游删了顶层 `spc.itp`，须 `oplsaa.ff/forcefield.itp` + `oplsaa.ff/spc.itp`；③ `constraint-algorithm` 不是合法 mdp 项（水自动走 SETTLE）；④ cutoff 1.0 nm 配 2.0 nm 盒触发“超过最短盒向量一半”，改 0.9；⑤ `GMX_THREAD_MPI=OFF` 下 `mdrun -nt` 直接致命报错；⑥ **`gen-vel=yes` 默认随机种子** → 必须 `gen-seed = 1234`，否则两次运行第 3 行坐标就不同（曾误判为 mdrun 不确定）。
-- SETTLE 内核（待补）设计已逐句核对：逐分子独立、无跨分子累加；三个必须当心点——`gmx::invsqrt` 的标量/double 语义、`pbc_dx_aiuc` 的分量折返要用 mask select 复刻、`bError` 是跨分子归约需 `vfirst` 并在出错时回退标量。门控条件：`packSize==1 && !bCalcVirial && pbc==PbcType::No`。
+- **内核落地**（子模块 `7f025fe`）：`src/src/gromacs/mdlib/riscv/settle_rvv.h`，8 lane（`vector_size(32)` float），AoS 坐标按 stride 3 gather/scatter，Step1–Step5 + 速度更新完整照抄；`gmx::invsqrt` / `gmx::fma` / `max` **逐 lane 调标量实现**保舍入；virial 按分子顺序逐 lane 累加（不跨 lane 归约）。PBC 折返**逐 lane 调标量 `pbc_dx_aiuc`**，门控简化为 `packSize == 1`。
+  - 门禁：`confout.gro` / `traj.trr` 两侧 `cmp` 一致（`confout_fnv=4ce190c207869f57`、`traj_fnv=e7ef2a091985cf81`）。
+  - 生效证据（这轮最硬的一条）：`settle.cpp.o` 反汇编 1115 条向量指令 → 又做了**扰动探针**——把内核写回加 `1e-6f` 后增量重编，`confout` 哈希立刻变成 `4b3d04593a8e6fbd`，还原后回到 `4ce190c2…`。这是"内核真被执行"的直接证据，不再是符号/反汇编层面的推断。
+  - 踩坑（全部实测）：① `pkg-build.sh` 把两个 `-D` 拼成**一个 argv**（`EXTRA="-DCMAKE_C_FLAGS=… -DCMAKE_CXX_FLAGS=…"`），cmake 把第二段当成第一个的值 → `CMAKE_CXX_FLAGS` 从未生效，内核压根没编进去，A/B 哈希"一致"其实是同一份标量代码（**同类空内核假绿的第二次现形**）。改成 bash 数组 `EXTRA=(-DCMAKE_C_FLAGS="${CMF}" -DCMAKE_CXX_FLAGS="${CMF}")` 后 `CMakeCache.txt` 才出现 `-march=rv64gcv -DRVV_KERNELS`。② `#include` 必须移到 `SettleData` / `SettleParameters` / `gmx::fma` / `pbc_dx_aiuc` 的声明**之后**（原位置在第 56 行，一开宏就是十几条 "not declared"）。③ `OUT` 传相对路径时，脚本 `cd "${OUT}/src/pkg"` 后再用 `${OUT}/bld` → 构建目录被解析到 `pkg/src/pkg/build/…`，`ninja` 找不到；脚本已加 `OUT=$(realpath "${OUT}")`。④ `pkg-build.sh` 会把 `src/` 拷进 `OUT/src/pkg` 再编，**改源码树不会触发重编**（对比时务必动副本，或用 `ninja -t commands` 看真命令行）。
