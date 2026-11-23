@@ -54,7 +54,7 @@ speexdsp / mpg123 / stockfish 这轮已经补完：两侧上游由 `cmake/pkg-bu
 
 ## 4. 遗留
 
-- libaom、libde265 的上游 RVV 文件（`av1/common/riscv/`、`libde265/riscv/`）在 `src/` 里存在但**未进构建**（`CMakeLists.txt` 无 riscv 命中），需自己接线后才算落地。
+- 无。libde265、libaom 均已接线打通（libaom 见 §7）。
 - pixman/libjpeg-turbo 若要"自写内核"，得另选点位（上游已覆盖主要 fast path）。
 
 ## 5. 更新（本轮推进）
@@ -72,3 +72,11 @@ speexdsp / mpg123 / stockfish 这轮已经补完：两侧上游由 `cmake/pkg-bu
   - 门禁：`confout.gro` / `traj.trr` 两侧 `cmp` 一致（`confout_fnv=4ce190c207869f57`、`traj_fnv=e7ef2a091985cf81`）。
   - 生效证据（这轮最硬的一条）：`settle.cpp.o` 反汇编 1115 条向量指令 → 又做了**扰动探针**——把内核写回加 `1e-6f` 后增量重编，`confout` 哈希立刻变成 `4b3d04593a8e6fbd`，还原后回到 `4ce190c2…`。这是"内核真被执行"的直接证据，不再是符号/反汇编层面的推断。
   - 踩坑（全部实测）：① `pkg-build.sh` 把两个 `-D` 拼成**一个 argv**（`EXTRA="-DCMAKE_C_FLAGS=… -DCMAKE_CXX_FLAGS=…"`），cmake 把第二段当成第一个的值 → `CMAKE_CXX_FLAGS` 从未生效，内核压根没编进去，A/B 哈希"一致"其实是同一份标量代码（**同类空内核假绿的第二次现形**）。改成 bash 数组 `EXTRA=(-DCMAKE_C_FLAGS="${CMF}" -DCMAKE_CXX_FLAGS="${CMF}")` 后 `CMakeCache.txt` 才出现 `-march=rv64gcv -DRVV_KERNELS`。② `#include` 必须移到 `SettleData` / `SettleParameters` / `gmx::fma` / `pbc_dx_aiuc` 的声明**之后**（原位置在第 56 行，一开宏就是十几条 "not declared"）。③ `OUT` 传相对路径时，脚本 `cd "${OUT}/src/pkg"` 后再用 `${OUT}/bld` → 构建目录被解析到 `pkg/src/pkg/build/…`，`ninja` 找不到；脚本已加 `OUT=$(realpath "${OUT}")`。④ `pkg-build.sh` 会把 `src/` 拷进 `OUT/src/pkg` 再编，**改源码树不会触发重编**（对比时务必动副本，或用 `ninja -t commands` 看真命令行）。
+
+## 7. libaom（已完成：上游 RVV 启用 + CDEF 派发）
+
+- 原状：`src/av1/common/riscv/` 已有上游 9 个 RVV 文件，`av1/av1.cmake` 也自带 `AOM_AV1_COMMON_INTRIN_RVV` 列表与 `if(HAVE_RVV)` 下的 `aom_av1_common_rvv_intrinsics` 目标库；但默认 `AOM_TARGET_CPU=generic` + `ENABLE_RVV=0`，生成的 `config/av1_rtcd.h` 里 `cdef_filter_8_0` 仍映射 `_c` → RVV 源码存在却不进构建、不派发。
+- 接线（子模块 `f0d3b89`）：① `cmake/pkg-build.sh` 让 `AOM_TARGET_CPU` 随 KERN 切 `generic`/`riscv64`，KERN=1 时补 `-DENABLE_RVV=1`（`EXTRA` 用 bash 数组写成两个独立 `-D`，避免 gromacs 那次"两 `-D` 拼成一个 argv"的坑）；② `cmake/upstream.cmake` 多传 `${RVV_MARCH}` 与 `$<IF:$<BOOL:${RVV_KERNELS}>,1,0>`；③ `src/av1/common/cdef_block.c` 用 `#if HAVE_RVV` 加 8 个 `cdef_filter_{8,16}_{0..3}_rvv` 前置声明，并把 `av1_cdef_filter_fb` 里 8bit/16bit 两张 `cdef_filter_fn[4]` 切到 `_rvv`，`#else` 保持 `_c`。
+- 门禁（q=30，5 帧 64×64）：A/B 均为 `frames=5 bytes=2683 fnv_bit=d74bacb1c99a8c30 dec_frames=5 fnv_px=ab53811322a88564`，`cmp hash.txt` 一致；q=60（703 B）两侧同样一致（`ac0c228f99fe3af5` / `6bf6bef2dc803fa3`）。
+- 生效证据：A 侧 `CMakeCache.txt` 有 `AOM_TARGET_CPU=riscv64`、`ENABLE_RVV=1`，生成的 `aom_config.h` 第 91 行 `#define HAVE_RVV 1`；`nm libaom.a` 命中 16 个 `cdef_filter_*_rvv`（B 侧 0 个）；`cdef_block_rvv.c.o` 反汇编 **2848 条向量指令**（`vle16` 277、`vadd` 283、`vmin`/`vmax` 各 232、`vsra` 152）。运行时在 `cdef_filter_8_0_rvv` 入口打印：单次 harness 运行命中 **5343 次**，`av1_cdef_frame` 被调 **10 次**（编码 5 + 解码 5）→ CDEF 在编解码两侧都真跑，`_rvv` 确实被派发。
+- 探针陷阱（这轮新踩）：把写回扰动放在 `cdef_filter_*_rvv` **入口**（`dest[0]^=1`）不会改变 `fnv_px`——该函数随后会把整块结果写回，覆盖入口处的扰动 → 曾误判成"CDEF 未执行"。改在 `av1_cdef_filter_fb` 入口扰动 `dst8[0]`，哈希立刻从 `6bf6bef2…` 变为 `6c333d6d…`。结论：扰动探针必须落在**调用点的 dst**，不能落在内核对 dst 的首次触碰处。
