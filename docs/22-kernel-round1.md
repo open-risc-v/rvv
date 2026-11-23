@@ -80,3 +80,9 @@ speexdsp / mpg123 / stockfish 这轮已经补完：两侧上游由 `cmake/pkg-bu
 - 门禁（q=30，5 帧 64×64）：A/B 均为 `frames=5 bytes=2683 fnv_bit=d74bacb1c99a8c30 dec_frames=5 fnv_px=ab53811322a88564`，`cmp hash.txt` 一致；q=60（703 B）两侧同样一致（`ac0c228f99fe3af5` / `6bf6bef2dc803fa3`）。
 - 生效证据：A 侧 `CMakeCache.txt` 有 `AOM_TARGET_CPU=riscv64`、`ENABLE_RVV=1`，生成的 `aom_config.h` 第 91 行 `#define HAVE_RVV 1`；`nm libaom.a` 命中 16 个 `cdef_filter_*_rvv`（B 侧 0 个）；`cdef_block_rvv.c.o` 反汇编 **2848 条向量指令**（`vle16` 277、`vadd` 283、`vmin`/`vmax` 各 232、`vsra` 152）。运行时在 `cdef_filter_8_0_rvv` 入口打印：单次 harness 运行命中 **5343 次**，`av1_cdef_frame` 被调 **10 次**（编码 5 + 解码 5）→ CDEF 在编解码两侧都真跑，`_rvv` 确实被派发。
 - 探针陷阱（这轮新踩）：把写回扰动放在 `cdef_filter_*_rvv` **入口**（`dest[0]^=1`）不会改变 `fnv_px`——该函数随后会把整块结果写回，覆盖入口处的扰动 → 曾误判成"CDEF 未执行"。改在 `av1_cdef_filter_fb` 入口扰动 `dst8[0]`，哈希立刻从 `6bf6bef2…` 变为 `6c333d6d…`。结论：扰动探针必须落在**调用点的 dst**，不能落在内核对 dst 的首次触碰处。
+
+## 8. 收口（指针与脱敏）
+
+- 主仓原先有 15 个包的子模块指针仍停在**骨架提交**（RVV 内核早已推到子模块远端，主仓没跟）。已全部同步：每个 `projects/<pkg>-rvv` 的 gitlink 都指向该子模块 `origin/main` 的当前内核提交，28/28 一致，主仓 `1dddb1d`。
+- 同时做了一轮公开仓库脱敏：28 个子模块的 `docs/`、`scripts/`、`README`、`skills/` 里原先写着真机 IP、`/mnt/ssd` 路径和发行版标识，已统一替换为 `<board>` / `<ssd>` / `<distro>` 占位；扫描 `HEAD` 树确认这四类字面量在仓库文档与脚本里已为 0（仅上游 `src/` 内的 `root@example.com` 之类测试数据保留）。
+- libaom 在子模块最新提交是 `abec78e`（`f0d3b89` 的 CDEF 接线 + 脱敏），主仓 §7 引用的 `f0d3b89` 是同一功能改动的前一版。
